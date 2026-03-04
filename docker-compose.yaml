@@ -1,0 +1,81 @@
+---
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: scrollic-postgres
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"testuser\" -d \"testdb\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  adminer:
+    image: adminer:5
+    container_name: scrollic-adminer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080"
+    networks:
+      - scrollic-network
+
+
+  redis:
+    image: redis:8.0-alpine
+    container_name: scrollic-redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  backend:
+    build: ./backend
+    container_name: scrollic-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      REDIS_HOST: redis
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - scrollic-network
+
+
+volumes:
+  pg_data:
+  redis_data:
+
+
+networks:
+  scrollic-network:
+    name: scrollic-network
+    driver: bridge
