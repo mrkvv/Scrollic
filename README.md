@@ -19,14 +19,14 @@
 | Технология | Назначение |
 |------------|------------|
 | [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org) | Основной язык мобильного приложения |
-| [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-1.10.2-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose) | UI фреймворк для Android |
+| [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-1.10.4-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose) | UI фреймворк для Android |
 | [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org) | Язык бэкенда |
-| [![FastAPI](https://img.shields.io/badge/FastAPI-0.129.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Бэкенд фреймворк |
-| [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17.8-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org) | Основная база данных |
-| [![Redis](https://img.shields.io/badge/Redis-8.6.1-DC382D?logo=redis&logoColor=white)](https://redis.io) | Кэширование и очереди |
+| [![FastAPI](https://img.shields.io/badge/FastAPI-0.134.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Бэкенд фреймворк |
+| [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org) | Основная база данных |
+| [![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?logo=redis&logoColor=white)](https://redis.io) | Кэширование и очереди |
 | [![Docker](https://img.shields.io/badge/Docker-29.2.1-2496ED?logo=docker&logoColor=white)](https://docker.com) | Контейнеризация |
 | [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-5.0.2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/) | Оркестрация контейнеров |
-| [![Figma](https://img.shields.io/badge/Figma-126.1.2-A259FF?logo=figma&logoColor=white)](https://www.figma.com) | Дизайн |
+| [![Figma](https://img.shields.io/badge/Figma-126.0.4-A259FF?logo=figma&logoColor=white)](https://www.figma.com) | Дизайн |
 
 ---
 # Подъем docker compose
