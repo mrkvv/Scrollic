@@ -4,13 +4,13 @@ services:
     image: postgres:17-alpine
     container_name: scrollic-postgres
     environment:
-      POSTGRES_DB: testdb
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     networks:
       - scrollic-network
     healthcheck:
@@ -38,7 +38,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - scrollic-network
     healthcheck:
@@ -57,15 +57,15 @@ services:
       redis:
         condition: service_healthy
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_DB: testdb
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: testpass
-      REDIS_HOST: redis
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
     volumes:
       - ./backend:/app
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT}:8000"
     networks:
       - scrollic-network
 
