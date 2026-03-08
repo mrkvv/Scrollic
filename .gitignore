@@ -1,0 +1,31 @@
+# Environment
+env/
+.env
+!.env.example
+*.key
+
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea/*
+!.idea/runConfigurations
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Volumes
+pg_data/
+redis-data/
+docker/volumes/
+docker/data/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+pip-log.txt
+.python-version
