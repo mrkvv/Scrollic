@@ -5,8 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scrollic.screens.AuthScreen
-import com.example.scrollic.screens.HelpScreen
 import com.example.scrollic.screens.HomeScreen
+import com.example.scrollic.screens.InfoScreen
 import com.example.scrollic.screens.InterestsScreen
 import com.example.scrollic.screens.ProfileScreen
 import com.example.scrollic.screens.SettingsScreen
@@ -37,19 +37,19 @@ fun AppNavGraph() {
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(navController)
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen()
+            SettingsScreen(navController)
         }
 
         composable(Screen.Interests.route) {
-            InterestsScreen()
+            InterestsScreen(navController)
         }
 
-        composable(Screen.Help.route) {
-            HelpScreen()
+        composable(Screen.Info.route) {
+            InfoScreen(navController)
         }
     }
 }
