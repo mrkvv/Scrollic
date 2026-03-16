@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.scrollic.R
 import com.example.scrollic.design.*
 import com.example.scrollic.screens.extra.LoginSheetContent
+import com.example.scrollic.screens.extra.RegistrationSheetContent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,10 +29,14 @@ fun AuthScreen(
     onLoginSuccess: () -> Unit
 ) {
 
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     val scope = rememberCoroutineScope()
 
     var showSheet by remember { mutableStateOf(false) }
+
+    var isLogin by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -63,7 +68,10 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(177.dp))
 
             Button(
-                onClick = { showSheet = true },
+                onClick = {
+                    isLogin = false
+                    showSheet = true
+                },
                 modifier = Modifier
                     .width(190.dp)
                     .height(60.dp)
@@ -88,15 +96,36 @@ fun AuthScreen(
             containerColor = Color.White
         ) {
 
-            LoginSheetContent(
-                onLoginClick = {
-                    scope.launch {
-                        sheetState.hide()
-                        showSheet = false
-                        onLoginSuccess()
+            if (isLogin) {
+
+                LoginSheetContent(
+                    onLoginClick = {
+                        scope.launch {
+                            sheetState.hide()
+                            showSheet = false
+                            onLoginSuccess()
+                        }
+                    },
+                    onRegisterClick = {
+                        isLogin = false
                     }
-                }
-            )
+                )
+
+            } else {
+
+                RegistrationSheetContent(
+                    onRegisterClick = {
+                        scope.launch {
+                            sheetState.hide()
+                            showSheet = false
+                            onLoginSuccess()
+                        }
+                    },
+                    onLoginClick = {
+                        isLogin = true
+                    }
+                )
+            }
         }
     }
 }

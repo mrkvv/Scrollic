@@ -2,18 +2,9 @@ package com.example.scrollic.screens.extra
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -33,18 +24,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.scrollic.design.InterFontType
-import com.example.scrollic.design.LightGrey
-import com.example.scrollic.design.Pink
-import com.example.scrollic.design.White
-import com.example.scrollic.design.getInterFont
+import com.example.scrollic.design.*
 
 @Composable
-fun LoginSheetContent(
-    onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit
+fun RegistrationSheetContent(
+    onRegisterClick: () -> Unit,
+    onLoginClick: () -> Unit
 ) {
 
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -55,13 +43,31 @@ fun LoginSheetContent(
     ) {
 
         Text(
-            text = "Вход",
+            text = "Регистрация",
             fontFamily = getInterFont(InterFontType.SEMI_BOLD),
             fontSize = 30.sp,
             color = Pink
         )
 
         Spacer(modifier = Modifier.height(35.dp))
+
+        Text(
+            text = "Имя",
+            fontFamily = getInterFont(InterFontType.REGULAR),
+            fontSize = 20.sp,
+            color = LightGrey
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(27.dp)
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = "Email",
@@ -100,8 +106,8 @@ fun LoginSheetContent(
 
         Spacer(modifier = Modifier.height(35.dp))
 
-        LoginButton(
-            onClick = onLoginClick,
+        RegistrationButton(
+            onClick = onRegisterClick,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
         )
@@ -114,18 +120,18 @@ fun LoginSheetContent(
         ){
 
             Text(
-                text = "Нет профиля? ",
+                text = "Уже есть профиль? ",
                 fontFamily = getInterFont(InterFontType.REGULAR),
                 fontSize = 20.sp,
                 color = LightGrey
             )
 
             Text(
-                text = "Регистрация",
+                text = "Войти",
                 fontFamily = getInterFont(InterFontType.SEMI_BOLD),
                 fontSize = 20.sp,
                 color = Pink,
-                modifier = Modifier.clickable { onRegisterClick() }
+                modifier = Modifier.clickable { onLoginClick() }
             )
         }
 
@@ -134,7 +140,7 @@ fun LoginSheetContent(
 }
 
 @Composable
-fun LoginButton(
+fun RegistrationButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -169,7 +175,7 @@ fun LoginButton(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Вход",
+            text = "Регистрация",
             fontFamily = getInterFont(InterFontType.BOLD),
             fontSize = 24.sp,
             color = White
@@ -179,9 +185,9 @@ fun LoginButton(
 
 @Preview(showBackground = true)
 @Composable
-fun LogPreview() {
-    LoginSheetContent(
-        onLoginClick = {},
-        onRegisterClick = {}
+fun RegPreview() {
+    RegistrationSheetContent(
+        onRegisterClick = {},
+        onLoginClick = {}
     )
 }
