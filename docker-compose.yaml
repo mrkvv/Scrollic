@@ -111,7 +111,7 @@ services:
     networks:
       - scrollic-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/hello" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/hello"]
       interval: 30s
       timeout: 5s
       retries: 3
