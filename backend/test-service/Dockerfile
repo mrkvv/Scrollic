@@ -10,7 +10,7 @@ COPY src ./src
 RUN gradle bootJar --no-daemon
 
 # Запуск
-FROM eclipse-temurin:17
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 COPY --from=build /app/build/libs/*.jar app.jar
