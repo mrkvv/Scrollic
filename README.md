@@ -33,10 +33,25 @@
 Как окружение для подъема рекоменду WSL + Docker Desktop. Устанавливаете WSL, устанавливаете Docker Desktop, врубаете галочку на интеграцию с вашей WSL и готово!
 
 1. В WSL перейти в каталог проекта `/Scrollic`.
-2. Выполнить команду `docker compose up -d --build`.
-3. Для проверки воспользоваться `docker ps` и (или) `docker compose logs`.
+2. Выполнить команду `docker compose up -d`. Первый запуск займет время, последующие будут быстрее.
+3. Для проверки воспользоваться `docker ps` и (или) `docker compose logs <название сервиса>`.
 
 Для просмотра состояния БД открыть в браузере ссылку `http://localhost:8081`.
+
+Для остановки контейнеров используйте `docker compose down` в корне проекта. Если хотите очистить все хранилища (PostgreSQL, Cassandra, Redis), то добавьте флаг `-v`. Если хотите очистить конкретное хранилище, то после `-v` укажите название сервиса.
+
+К пункту 2: Если вы изменили что-то в backend'е, то добавьте флаг для пересборки образов `docker compose up -d --build` - тоже займет время.
+
+---
+# Карта сервисов
+| Сервис | Имя контейнера | Порт наружу | Порт в контейнере |
+|--------|----------------|-------------|------------------------|
+| API Gateway | `scrollic-api-gateway` | `${GATEWAY_PORT}` | 8080 |
+| Test Service | `scrollic-test-service` | `${TEST_SERVICE_PORT}` | 8090 |
+| PostgreSQL | `scrollic-postgres` | `${POSTGRES_PORT}` | 5432 |
+| Redis | `scrollic-redis` | `${REDIS_PORT}` | 6379 |
+| Cassandra | `scrollic-cassandra` | `${CASSANDRA_PORT}` | 9042 |
+| Adminer | `scrollic-adminer` | 8081 | 8080 |
 
 ---
 # Работа с ветками

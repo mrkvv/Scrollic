@@ -81,27 +81,41 @@ services:
           memory: 1G
 
 
-  backend:
-    build: ./backend
-    container_name: scrollic-backend
+  test-service:
+    build: ./backend/test-service
+    container_name: scrollic-test-service
+    ports:
+      - "${TEST_SERVICE_PORT}:8090"
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/hello"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+
+  api-gateway:
+    build: ./backend/APIGateway
+    container_name: scrollic-api-gateway
+    ports:
+      - "${GATEWAY_PORT}:8080"
     depends_on:
-      postgres:
+      test-service:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_HOST: ${REDIS_HOST}
-    volumes:
-      - ./backend:/app
-    ports:
-      - "${BACKEND_PORT}:8000"
+      TEST_SERVICE_URL: http://test-service:8090
     networks:
       - scrollic-network
-
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/hello"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
 
 volumes:
   pg_data:
