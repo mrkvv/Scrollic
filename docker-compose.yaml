@@ -97,7 +97,8 @@ services:
         sleep 20;
         echo "Начало инициализации...";
         until cqlsh cassandra -f /scripts/init.cql; do
-          echo "Cassandra еще не запустилась, повторная попытка через 5 секунд...";
+          echo "Cassandra еще не запустилась, \
+            повторная попытка через 5 секунд...";
           sleep 5;
         done;
         echo "Инициализация Cassandra завершена!";
