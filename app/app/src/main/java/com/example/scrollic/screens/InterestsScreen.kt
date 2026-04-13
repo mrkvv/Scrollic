@@ -1,5 +1,6 @@
 package com.example.scrollic.screens
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.scrollic.design.IconType
 import com.example.scrollic.design.InterFontType
+import com.example.scrollic.design.Pink
 import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
@@ -44,29 +46,37 @@ fun InterestsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 40.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
-            Spacer(Modifier.height(340.dp))
+            Spacer(Modifier.height(60.dp))
 
             Text(
-                text = "Интересы",
-                style = MaterialTheme.typography.headlineMedium
+                text = "Выберите темы, которые вам интересны",
+                fontFamily = getInterFont(InterFontType.SEMI_BOLD),
+                fontSize = 24.sp,
+                color = Pink
             )
+        }
 
-            Spacer(Modifier.height(40.dp))
-
-            Button(
-                onClick = { navController.popBackStack() },
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 40.dp, vertical = 60.dp)
+        ){
+            Row(
                 modifier = Modifier
-                    .width(190.dp)
-                    .height(60.dp)
+                    .clickable { navController.popBackStack() }
+                    .align(Alignment.End)
             ) {
-                Text(
-                    text = "Назад",
-                    fontFamily = getInterFont(InterFontType.BOLD),
-                    fontSize = 24.sp,
-                    color = White
+
+                Icon(
+                    imageVector = getIcon(IconType.ARROW_WHITE),
+                    contentDescription = null,
+                    tint = Color.LightGray,
+                    modifier = Modifier
+                        .width(26.dp)
+                        .height(16.dp)
                 )
             }
         }
