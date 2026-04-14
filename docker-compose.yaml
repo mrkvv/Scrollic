@@ -80,6 +80,29 @@ services:
         reservations:
           memory: 1G
 
+  cassandra-init:
+    image: cassandra:5.0
+    container_name: scrollic-cassandra-init
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    volumes:
+      - ./backend/CassDataBase.cql:/scripts/init.cql
+    networks:
+      - scrollic-network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Ожидание готовности Cassandra...";
+        sleep 20;
+        echo "Начало инициализации...";
+        until cqlsh cassandra -f /scripts/init.cql; do
+          echo "Cassandra еще не запустилась, \
+            повторная попытка через 5 секунд...";
+          sleep 5;
+        done;
+        echo "Инициализация Cassandra завершена!";
+
 
   test-service:
     build: ./backend/test-service
