@@ -185,6 +185,9 @@ services:
         condition: service_healthy
     environment:
       TEST_SERVICE_URL: http://test-service:8090
+      USER_SERVICE_URL: http://user-service:8001
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     networks:
       - scrollic-network
     healthcheck:
