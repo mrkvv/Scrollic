@@ -164,7 +164,7 @@ services:
     ports:
       - "${GATEWAY_PORT}:8080"
     depends_on:
-      test-service:
+      user-service:
         condition: service_healthy
       redis:
         condition: service_healthy
