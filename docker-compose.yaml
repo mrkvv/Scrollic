@@ -140,6 +140,41 @@ services:
       retries: 3
       start_period: 45s
 
+
+  user-service:
+    build: ./backend/UserService
+    container_name: scrollic-user-service
+    ports:
+      - "${USER_SERVICE_PORT}:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DB: 0
+      REDIS_PASSWORD: ""
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request;
+             urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+
 volumes:
   pg_data:
   redis_data:
