@@ -158,21 +158,6 @@ services:
       - scrollic-network
 
 
-  test-service:
-    build: ./backend/test-service
-    container_name: scrollic-test-service
-    ports:
-      - "${TEST_SERVICE_PORT}:8090"
-    networks:
-      - scrollic-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/hello"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
-
-
   api-gateway:
     build: ./backend/APIGateway
     container_name: scrollic-api-gateway
@@ -184,7 +169,6 @@ services:
       redis:
         condition: service_healthy
     environment:
-      TEST_SERVICE_URL: http://test-service:8090
       USER_SERVICE_URL: http://user-service:8001
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
