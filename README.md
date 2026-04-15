@@ -47,7 +47,7 @@
 | Технология | Назначение |
 |------------|------------|
 | [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org) | Язык бэкенда (UserService, FeedService, ActionService) |
-| [![FastAPI](https://img.shields.io/badge/FastAPI-0.134.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Python бэкенд фреймворк |
+| [![FastAPI](https://img.shields.io/badge/FastAPI-0.134.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Фреймворк Python-микросервисов |
 
 ### Data & Messaging
 | Технология | Назначение |
@@ -76,7 +76,8 @@
 2. Выполнить команду `docker compose up -d`. Первый запуск займет время, последующие будут быстрее.
 3. Для проверки воспользоваться `docker ps` и (или) `docker compose logs <название сервиса>`.
 
-Для просмотра состояния БД открыть в браузере ссылку `http://localhost:8081`.
+Для просмотра состояния PostgreSQL открыть в браузере ссылку `http://localhost:8081`.
+Для просмотра состояния Kafka открыть в браузере ссылку `http://localhost:${KAFKA_UI_PORT}`
 
 Для остановки контейнеров используйте `docker compose down` в корне проекта. Если хотите очистить все хранилища (PostgreSQL, Cassandra, Redis), то добавьте флаг `-v`. Если хотите очистить конкретное хранилище, то после `-v` укажите название сервиса.
 
