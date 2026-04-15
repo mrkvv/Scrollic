@@ -1,0 +1,791 @@
+{
+  "info": {
+    "_postman_id": "24e6a624-1bcd-4cc3-b352-4abfeea56c13",
+    "name": "APIGateway Documentation",
+    "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53202645",
+    "_collection_link": "https://go.postman.co/collection/53202645-24e6a624-1bcd-4cc3-b352-4abfeea56c13?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth Interactions",
+      "item": [
+        {
+          "name": "Регистрация нового пользователя",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"mrkv\",\r\n    \"password\": \"mrkv_password_123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "/api/auth/register",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "### Регистрация нового пользователя в базе данных (PostgreSQL).\n\nПринимаем запрос и проверяем их отправленное количество в последнее время. Если было слишком много, отдаем пользователю 429, а если все ок, то перенаправляем в UserService, а затем ожидаем его ответа.  \nВозможные статусы ответов:\n- 201 Created\n- 409 Conflict\n- 429 Too Many Requests\n    \n\n_Важно!: подумать про токены и после успешной реги мы сразу входим в аккаунт или сбрасываем пользователя на окно входа в аккаунт?_"
+          },
+          "response": [
+            {
+              "name": "Успешная регистрация",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"mrkv\",\r\n    \"password\": \"mrkv_password_123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/auth/register",
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"success\"\r\n}"
+            },
+            {
+              "name": "Username занят",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"mrkv\",\r\n    \"password\": \"mrkv_password_123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/auth/register",
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"User with name mrkv already exists\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Вход в аккаунт",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"mrkv\",\r\n    \"password\": \"mrkv_password_123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "/api/auth/login",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "### Запрос на начало сессии (выдача токена)\n\nКлиент ввел свои данные (логин, пароль), в ответ он получит _**токен**_, который он у себя запоминает. Далее этот токен будет прикрепляться к любому запросу для ауторизации.  \nТокены предлагаю хранить в Redis так: `session:{token} -> Hash: {user_id, userName, expiresAt}` \nВозможные статусы ответов:\n- 200 OK\n- 401 Unauthorized\n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Успешный вход",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"mrkv\",\r\n    \"password\": \"mrkv_password_123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/auth/login",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature\"\r\n}"
+            },
+            {
+              "name": "Пользователя нет",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"nonMrkv\",\r\n    \"password\": \"nonMrkv_password_123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/auth/login",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Invalid username or password\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Выход из аккаунта",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "/api/auth/logout",
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "### Анвалидация токена (выход)\n\nВ Authorization передается Bearer token. Этот запрос транслируется в UserService и уже тот в Redis ищет такой ключ (токен) и если находит, удаляет запись.\n\nВозможные статусы ответов:\n- 200 OK\n- 401 Unauthorized\n- 429 Too Many Requests"
+          },
+          "response": []
+        },
+        {
+          "name": "Запрос информации о пользователе",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "/api/auth/me",
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "### Запрос информации о пользователе\n\nОжидает Bearer token. В ответе возвращает полную информацию.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized\n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Пользователь существует",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "/api/auth/me",
+                  "path": [
+                    "api",
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"name\": \"mrkv\"\r\n    }\r\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Раздел взаимодействия с UserService. Здесь находятся все взаимодейтсвия касательно пользователя и авторизации."
+    },
+    {
+      "name": "Feed Interactions",
+      "item": [
+        {
+          "name": "Получить пачку новостей",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "/api/feed?amount={news_amount}",
+              "path": [
+                "api",
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "amount",
+                  "value": "{news_amount}"
+                }
+              ]
+            },
+            "description": "### Получить пачку новостей\n\nУказывается как query-параметр сколько новостей нужно отослать (в дальнейшем n). По дефолту возвращает 20 новостей  \nЗа кулисами: переадресация запроса в FeedService. Тот ищет веса этого пользователя из Cassandra таблицы \"user_weights\", берет веса и на их основе вытаскивает из таблицы \"тег-новость\" n новостей, отправляет их обратно, мы получаем и возвращаем клиенту. Так же стоит проверять на просмотренные новости, чтобы второй раз они пользователю не попадались (желательно).\n\n_P.S.: вроде бы ситуации с отсутствием весов быть не может, поэтому не рассматривал этот случай ниже._\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 400 Bad Request (значение параметра меньше 1 или больше 100)\n    \n- 401 Unauthorized (если токен не прошел)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Все хорошо",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/feed?amount=2",
+                  "path": [
+                    "api",
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "amount",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"news\": [\r\n        {\r\n            \"id\": \"10\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"100\",\r\n            \"theme_id\": \"3\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {\r\n            \"id\": \"14\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"30\",\r\n            \"theme_id\": \"4\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        }\r\n    ]\r\n}"
+            },
+            {
+              "name": "Неверный параметр",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/feed?amount=-3",
+                  "path": [
+                    "api",
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "amount",
+                      "value": "-3"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Invalid amount parameter. Please provide a positive integer.\"\r\n}"
+            },
+            {
+              "name": "Неверный токен",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/feed?amount=10",
+                  "path": [
+                    "api",
+                    "feed"
+                  ],
+                  "query": [
+                    {
+                      "key": "amount",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Invalid token. Please provide a valid token.\"\r\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Все запросы, связанные с лентой. Все будет переадресовано в FeedService"
+    },
+    {
+      "name": "Actions",
+      "item": [
+        {
+          "name": "Лайк",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "/api/actions/like/{news_id}",
+              "path": [
+                "api",
+                "actions",
+                "like",
+                "{news_id}"
+              ]
+            },
+            "description": "### Запрос на выставление лайка новости\n\nАсинхронный запрос. Из токена получаем пользователя, из url получаем id новости, которую этот пользователь лайкнул.\n\nAPIGateway сначала должен проверить в Redis, существует ли такой токен, если да, то он отправляет запрос в ActionService, сразу вернув клиенту 202. Если токена нет в Redis, то 401.\n\nПод капотом у ActionService имеется в виду следующее: мы не сразу идем в Cassandra и добавляем туда этот один лайк, а пока сохраняем его в Redis. Как только в Redis набирается определенное количество лайков (пусть 100 и они от всех пользователей) мы идем и пачкой вносим их в Cassandra. Возможно рассмотреть использование какого-нибудь брокера сообщений.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests (выставлю там значение побольше. Выпадет только если произойдет какая-то ботоводческая активность, или тип будет баловаться туда сюда очень много раз жмать лайк)"
+          },
+          "response": [
+            {
+              "name": "Успешный лайк",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/actions/like/10",
+                  "path": [
+                    "api",
+                    "actions",
+                    "like",
+                    "10"
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"success\"\r\n}"
+            },
+            {
+              "name": "Ошибка аутентификации",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/actions/like/10",
+                  "path": [
+                    "api",
+                    "actions",
+                    "like",
+                    "10"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Authorization invalid. Please provide a valid token.\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Снятие лайка",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "/api/actions/like/{news_id}",
+              "path": [
+                "api",
+                "actions",
+                "like",
+                "{news_id}"
+              ]
+            },
+            "description": "### Снятие лайка\n\nАсинхронная операция. В пути url'а указываем id новости, с которой мы убрали лайк.\n\nОтличается от выставления лайка только HTTP методом. Под капотом отдает это ActionService, который в свою очередь сносит запись этого лайка в Redis и проверяет, как бы в Cassandra его не было, при необходимости и его сносит.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests (выставлю там значение побольше. Выпадет только если произойдет какая-то ботоводческая активность, или тип будет баловаться туда сюда очень много раз жмать лайк)"
+          },
+          "response": []
+        },
+        {
+          "name": "Просмотрено",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "/api/actions/view/{news_id}",
+              "path": [
+                "api",
+                "actions",
+                "view",
+                "{news_id}"
+              ]
+            },
+            "description": "### Пометить новость как просмотренную у этого пользователя.\n\nМеханика аналогичная с лайком - тоже сначала копим в Redis и пачкой вносим в Cassandra.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized"
+          },
+          "response": []
+        },
+        {
+          "name": "Получить лайки",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "/api/actions/likes",
+              "path": [
+                "api",
+                "actions",
+                "likes"
+              ]
+            },
+            "description": "### Получить список лайкнутых новостей пользователя\n\nПользователя вытаскиваем из токена. Если такого нет, то незамедлительно скидываем 401, если есть, то переадресуем в ActionService.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Успешно",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "/api/actions/likes",
+                  "path": [
+                    "api",
+                    "actions",
+                    "likes"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"liked_news\": [\r\n        {\r\n            \"id\": \"10\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"100\",\r\n            \"theme_id\": \"3\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {\r\n            \"id\": \"14\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"30\",\r\n            \"theme_id\": \"4\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {}\r\n    ]\r\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Тут собраны все запросы касаемо действий пользователя. Будет выполнена переадресация на ActionService."
+    }
+  ]
+}
