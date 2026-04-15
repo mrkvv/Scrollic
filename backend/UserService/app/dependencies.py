@@ -1,72 +1,50 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from .auth import validate_token, extract_user_id_from_token
-from .redis_client import get_redis
-import redis
-import json
-
-security = HTTPBearer()
+from fastapi import Depends, HTTPException, status, Header
+from sqlalchemy.orm import Session
+from .database import get_db
+from .models import User
 
 
 async def get_current_user_id(
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        redis_client: redis.Redis = Depends(get_redis)
+    x_user_id: int = Header(..., alias="X-User-Id"),
+    db: Session = Depends(get_db)
 ) -> int:
-    token = credentials.credentials
-
-    # Проверяем blacklist
-    if redis_client:
-        token_key = f"blacklist:{token}"
-        if redis_client.exists(token_key):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has been revoked",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-    if not validate_token(token):
+    """
+    Получает user_id из заголовка X-User-Id от API Gateway.
+    API Gateway уже проверил токен и подставил этот заголовок.
+    """
+    user = db.query(User).filter(User.id == x_user_id).first()
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="User not found"
         )
-
-    user_id = extract_user_id_from_token(token)
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
-        )
-
-    return user_id
+    return x_user_id
 
 
 async def get_current_user_optional(
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        redis_client: redis.Redis = Depends(get_redis)
+    x_user_id: int = Header(None, alias="X-User-Id"),
+    db: Session = Depends(get_db)
 ) -> int | None:
-    token = credentials.credentials
-
-    if redis_client:
-        token_key = f"blacklist:{token}"
-        if redis_client.exists(token_key):
-            return None
-
-    if validate_token(token):
-        return extract_user_id_from_token(token)
+    """
+    Опциональное получение user_id (для эндпоинтов где не обязателен)
+    """
+    if x_user_id:
+        user = db.query(User).filter(User.id == x_user_id).first()
+        return x_user_id if user else None
     return None
 
 
-async def get_user_session(
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        redis_client: redis.Redis = Depends(get_redis)
-) -> dict | None:
-    """Получить данные сессии пользователя (если нужно)"""
-    token = credentials.credentials
-
-    if not redis_client:
-        return None
-
-    # Здесь можно по токену найти сессию
-    # Для простоты возвращаем None
-    return None
+async def get_current_username(
+    x_username: str = Header(..., alias="X-Username"),
+    db: Session = Depends(get_db)
+) -> str:
+    """
+    Получает username из заголовка X-Username от API Gateway
+    """
+    user = db.query(User).filter(User.name == x_username).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+    return x_username
