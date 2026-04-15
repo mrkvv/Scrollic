@@ -10,22 +10,48 @@
 | <img src="https://github.com/ArtemAbrosimov1.png" width="50" height="50" style="border-radius: 50%;">  | **Абросимов Артем Дмитриевич** <br> Mobile | [![GitHub](https://img.shields.io/badge/-ArtemAbrosimov1-181717?style=flat&logo=github)](https://github.com/ArtemAbrosimov1) |
 | <img src="https://github.com/kirillbaykin.png" width="50" height="50" style="border-radius: 50%;">  | **Байкин Кирилл Александрович** <br> Backend | [![GitHub](https://img.shields.io/badge/-kirillbaykin-181717?style=flat&logo=github)](https://github.com/kirillbaykin) |
 | <img src="https://github.com/polinapup.png" width="50" height="50" style="border-radius: 50%;">  | **Калашникова Полина Олеговна** <br> TeamLead / Arch / Design | [![GitHub](https://img.shields.io/badge/-polinapup-181717?style=flat&logo=github)](https://github.com/polinapup) |
-| <img src="https://github.com/mrkvv.png" width="50" height="50" style="border-radius: 50%;">  | **Марков Леонид Александрович** <br> DevOps | [![GitHub](https://img.shields.io/badge/-mrkvv-181717?style=flat&logo=github)](https://github.com/mrkvv) |
+| <img src="https://github.com/mrkvv.png" width="50" height="50" style="border-radius: 50%;">  | **Марков Леонид Александрович** <br> DevOps / Backend | [![GitHub](https://img.shields.io/badge/-mrkvv-181717?style=flat&logo=github)](https://github.com/mrkvv) |
 
 
 ---
 # Технологический стек
 
+### Mobile
 | Технология | Назначение |
 |------------|------------|
 | [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org) | Основной язык мобильного приложения |
 | [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-1.10.4-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose) | UI фреймворк для Android |
-| [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org) | Язык бэкенда |
-| [![FastAPI](https://img.shields.io/badge/FastAPI-0.134.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Бэкенд фреймворк |
-| [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org) | Основная база данных |
-| [![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?logo=redis&logoColor=white)](https://redis.io) | Кэширование и очереди |
+
+### Backend (Java)
+| Технология | Назначение |
+|------------|------------|
+[![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)](https://docs.oracle.com/en/java/javase/17) | Язык микросервисов (API Gateway, NewsFetcher, NewsHandler) |
+| [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot) | Фреймворк Java-микросервисов |
+| [![Spring Cloud Gateway](https://img.shields.io/badge/Spring%20Cloud%20Gateway-5.0.1-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-cloud-gateway) | API Gateway (WebFlux, rate limiting, auth) |
+
+### Backend (Python)
+| Технология | Назначение |
+|------------|------------|
+| [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org) | Язык бэкенда (UserService, FeedService, ActionService) |
+| [![FastAPI](https://img.shields.io/badge/FastAPI-0.134.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com) | Python бэкенд фреймворк |
+
+### Data & Messaging
+| Технология | Назначение |
+|------------|------------|
+| [![Apache Cassandra](https://img.shields.io/badge/Apache%20Cassandra-5.0-1287B1?logo=apachecassandra&logoColor=white)](https://cassandra.apache.org) | Распределённая БД для новостей и действий |
+| [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org) | База данных пользователей и тегов |
+| [![Redis](https://img.shields.io/badge/Redis-8.0-DC382D?logo=redis&logoColor=white)](https://redis.io) | Кэширование, сессии, rate limiting |
+| [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-4.0.2-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org) | Очередь сообщений |
+
+### DevOps
+| Технология | Назначение |
+|------------|------------|
 | [![Docker](https://img.shields.io/badge/Docker-29.2.1-2496ED?logo=docker&logoColor=white)](https://docker.com) | Контейнеризация |
 | [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-5.0.2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/) | Оркестрация контейнеров |
+
+### Design
+| Технология | Назначение |
+|------------|------------|
 | [![Figma](https://img.shields.io/badge/Figma-126.0.4-A259FF?logo=figma&logoColor=white)](https://www.figma.com) | Дизайн |
 
 ---
