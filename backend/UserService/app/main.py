@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 from .database import engine, Base
-from .config import config
 from .redis_client import redis_client
 
 # Импорт моделей
-from .models import User
 
 # ОТЛАДКА: проверим, что зарегистрировано в метаданных
 print("=== DEBUG: Tables in metadata before create_all ===")

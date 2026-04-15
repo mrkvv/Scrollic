@@ -4,7 +4,6 @@ from .. import schemas
 from ..database import get_db
 from ..models import User
 from ..auth import verify_password, get_password_hash
-from ..dependencies import get_current_user_id
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 

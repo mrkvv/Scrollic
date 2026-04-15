@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Header  # <-- ДОБАВИТЬ Header
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime
 from .. import schemas
 from ..database import get_db
 from ..models import User
-from ..auth import verify_password, get_password_hash, create_access_token
+from app.auth import verify_password, get_password_hash, create_access_token
 from ..redis_client import get_redis
 from ..config import config
 import redis
