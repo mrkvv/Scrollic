@@ -73,10 +73,12 @@
 | Сервис | Имя контейнера | Порт наружу | Порт в контейнере |
 |--------|----------------|-------------|------------------------|
 | API Gateway | `scrollic-api-gateway` | `${GATEWAY_PORT}` | 8080 |
-| Test Service | `scrollic-test-service` | `${TEST_SERVICE_PORT}` | 8090 |
+| UserService | `scrollic-user-service` | `${USER_SERVICE_PORT}` | 8001 |
+| Cassandra | `scrollic-cassandra` | `${CASSANDRA_PORT}` | 9042 |
 | PostgreSQL | `scrollic-postgres` | `${POSTGRES_PORT}` | 5432 |
 | Redis | `scrollic-redis` | `${REDIS_PORT}` | 6379 |
-| Cassandra | `scrollic-cassandra` | `${CASSANDRA_PORT}` | 9042 |
+| Kafka | `scrollic-kafka` | `${KAFKA_PORT}` | 9092 |
+| KafkaUI | `scrollic-kafka-ui` | `${KAFKA_UI_PORT}` | 8080 |
 | Adminer | `scrollic-adminer` | 8081 | 8080 |
 
 ---
