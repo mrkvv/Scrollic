@@ -1,6 +1,7 @@
 package com.example.scrollic.screens.extra
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.innerShadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -40,6 +44,7 @@ fun RegistrationSheetContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp, vertical = 20.dp)
+
     ) {
 
         Text(
@@ -180,6 +185,50 @@ fun RegistrationButton(
             fontSize = 24.sp,
             color = White
         )
+    }
+}
+
+@Composable
+fun GlassSheet(
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.75f),
+                        Color.White.copy(alpha = 1f)
+                    )
+                )
+            )
+            .innerShadow(
+                shape = shape,
+                shadow = Shadow(
+                    radius = 1.5.dp,
+                    spread = 0.dp,
+                    offset = DpOffset(2.dp, 2.dp),
+                    color = Color.White,
+                    alpha = 0.4f
+                )
+            )
+
+            .innerShadow(
+                shape = shape,
+                shadow = Shadow(
+                    radius = 6.dp,
+                    spread = 0.dp,
+                    offset = DpOffset((-3).dp, (-3).dp),
+                    color = Color.White,
+                    alpha = 0.25f
+                )
+            )
+    ) {
+        content()
     }
 }
 
