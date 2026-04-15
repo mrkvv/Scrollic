@@ -1,50 +1,58 @@
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from .database import get_db
 from .models import User
+from .redis_client import get_redis
+import redis
+
+security = HTTPBearer()
 
 
 async def get_current_user_id(
-    x_user_id: int = Header(..., alias="X-User-Id"),
-    db: Session = Depends(get_db)
+        credentials: HTTPAuthorizationCredentials = Depends(security),
+        redis_client: redis.Redis = Depends(get_redis),
+        db: Session = Depends(get_db)
 ) -> int:
     """
-    Получает user_id из заголовка X-User-Id от API Gateway.
-    API Gateway уже проверил токен и подставил этот заголовок.
+    Извлекает user_id из токена и проверяет наличие сессии в Redis.
     """
-    user = db.query(User).filter(User.id == x_user_id).first()
+    token = credentials.credentials
+
+    # 1. Проверяем наличие Redis
+    if not redis_client:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Redis not available"
+        )
+
+    session_key = f"session:{token}"
+
+    session_data = redis_client.hgetall(session_key)
+
+    if not session_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session not found or expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # 3. Извлекаем user_id из Hash (ключи в bytes)
+    user_id_bytes = session_data.get(b"user_id")
+    if not user_id_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid session data: missing user_id",
+        )
+
+    user_id = int(user_id_bytes)
+
+    # 4. Проверяем, что пользователь существует в БД
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            detail="User not found",
         )
-    return x_user_id
 
-
-async def get_current_user_optional(
-    x_user_id: int = Header(None, alias="X-User-Id"),
-    db: Session = Depends(get_db)
-) -> int | None:
-    """
-    Опциональное получение user_id (для эндпоинтов где не обязателен)
-    """
-    if x_user_id:
-        user = db.query(User).filter(User.id == x_user_id).first()
-        return x_user_id if user else None
-    return None
-
-
-async def get_current_username(
-    x_username: str = Header(..., alias="X-Username"),
-    db: Session = Depends(get_db)
-) -> str:
-    """
-    Получает username из заголовка X-Username от API Gateway
-    """
-    user = db.query(User).filter(User.name == x_username).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-    return x_username
+    return user_id

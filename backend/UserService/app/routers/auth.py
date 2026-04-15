@@ -1,17 +1,18 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Header  # <-- ДОБАВИТЬ Header
+from fastapi import APIRouter, HTTPException, status, Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 from .. import schemas
 from ..database import get_db
 from ..models import User
-from app.auth import verify_password, get_password_hash, create_access_token
+from ..auth import verify_password, get_password_hash, create_access_token
 from ..redis_client import get_redis
 from ..config import config
 import redis
 import json
-import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
+security = HTTPBearer()
 
 
 @router.post("/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -42,22 +43,20 @@ def register(
     db.commit()
     db.refresh(new_user)
 
-    # Генерация токена
+    # Генерация токена (Bearer Token)
     access_token = create_access_token(data={"sub": str(new_user.id)})
 
-    # Создаем сессию в Redis (если Redis доступен)
+    # Сохраняем сессию в Redis: ключ = сам токен
     if redis_client:
-        session_id = str(uuid.uuid4())
-        session_data = {
-            "user_id": new_user.id,
-            "user_name": new_user.name,
-            "login_time": datetime.utcnow().isoformat()
-        }
-        redis_client.setex(
-            f"session:{session_id}",
-            config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-            json.dumps(session_data)
+        redis_client.hset(
+            f"session:{access_token}",
+            mapping={
+                "user_id": new_user.id,
+                "user_name": new_user.name,
+                "expires_at": (datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)).isoformat()
+            }
         )
+        redis_client.expire(f"session:{access_token}", config.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 
     return {
         "access_token": access_token,
@@ -92,22 +91,20 @@ def login(
             detail="Invalid username or password"
         )
 
-    # Генерация токена
+    # Генерация токена (Bearer Token)
     access_token = create_access_token(data={"sub": str(user.id)})
 
-    # Создаем сессию в Redis
+    # Сохраняем сессию в Redis: ключ = сам токен
     if redis_client:
-        session_id = str(uuid.uuid4())
-        session_data = {
-            "user_id": user.id,
-            "user_name": user.name,
-            "login_time": datetime.utcnow().isoformat()
-        }
-        redis_client.setex(
-            f"session:{session_id}",
-            config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-            json.dumps(session_data)
+        redis_client.hset(
+            f"session:{access_token}",
+            mapping={
+                "user_id": user.id,
+                "user_name": user.name,
+                "expires_at": (datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)).isoformat()
+            }
         )
+        redis_client.expire(f"session:{access_token}", config.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 
     return {
         "access_token": access_token,
@@ -123,24 +120,16 @@ def login(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
-        x_user_id: int = Header(..., alias="X-User-Id"),
+        credentials: HTTPAuthorizationCredentials = Depends(security),
         redis_client: redis.Redis = Depends(get_redis)
 ):
-    """Выход из системы - удаляем все сессии пользователя из Redis"""
+    """Выход из системы - удаляем запись из Redis по токену"""
+
+    token = credentials.credentials
 
     if redis_client:
-        # Ищем и удаляем все сессии этого пользователя
-        session_keys = redis_client.keys("session:*")
-        deleted_count = 0
-        for session_key in session_keys:
-            session_data = redis_client.get(session_key)
-            if session_data:
-                data = json.loads(session_data)
-                if data.get("user_id") == x_user_id:
-                    redis_client.delete(session_key)
-                    deleted_count += 1
-
-        if deleted_count > 0:
-            print(f"Deleted {deleted_count} sessions for user {x_user_id}")
+        # Удаляем сессию по ключу = сам токен
+        redis_client.delete(f"session:{token}")
+        print(f"Session deleted for token: {token[:20]}...")
 
     return None
