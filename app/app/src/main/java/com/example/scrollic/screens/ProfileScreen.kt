@@ -37,6 +37,8 @@ import com.example.scrollic.design.InterFontType
 import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
+import com.example.scrollic.screens.extra.BottomSheet
+import com.example.scrollic.screens.extra.EditGlassSheet
 import com.example.scrollic.screens.extra.EditingProfileSheetContent
 import com.example.scrollic.screens.extra.LoginSheetContent
 import com.example.scrollic.screens.extra.RegistrationSheetContent
@@ -151,15 +153,13 @@ fun ProfileScreen(
         }
     }
 
-    if (showSheet) {
-
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
-            sheetState = sheetState,
-            containerColor = Color(0xFF1E1E1E)
-        ) {
+    BottomSheet(
+        visible = showSheet,
+        onDismiss = { showSheet = false }
+    ) {
+        EditGlassSheet {
             EditingProfileSheetContent(
-                navController = rememberNavController()
+                onBackClick = { showSheet = false }
             )
         }
     }
