@@ -23,3 +23,17 @@
 | PostgreSQL | База данных пользователей и тегов | UserService записывает новых пользователей | Изначально был основной БД, но после перехода на Cassandra остался как надежный справочник |
 | Redis | Сессии, rate limiting, cache | При логине UserService записывает токен <br>-> APIGateway проводит валидацию токена и rate limiting | Молниеносная скорость доступа в памяти, автоудаления устаревших записей |
 | Kafka | Асинхронная очередь новостей на обработку | NewsFetcherService производит записи <br>-> NewsHandlerService потребляет | Огромная пропускная способность, нет нужды в гибкой маршрутизации |
+
+---
+# Карта сервисов в docker compose
+
+| Сервис | Имя контейнера | Порт наружу | Порт в контейнере |
+|--------|----------------|-------------|-------------------|
+| API Gateway | `scrollic-api-gateway` | `${GATEWAY_PORT}` | 8080 |
+| UserService | `scrollic-user-service` | `${USER_SERVICE_PORT}` | 8001 |
+| Cassandra | `scrollic-cassandra` | `${CASSANDRA_PORT}` | 9042 |
+| PostgreSQL | `scrollic-postgres` | `${POSTGRES_PORT}` | 5432 |
+| Redis | `scrollic-redis` | `${REDIS_PORT}` | 6379 |
+| Kafka | `scrollic-kafka` | `${KAFKA_PORT}` | 9092 |
+| KafkaUI | `scrollic-kafka-ui` | `${KAFKA_UI_PORT}` | 8080 |
+| Adminer | `scrollic-adminer` | 8081 | 8080 |
