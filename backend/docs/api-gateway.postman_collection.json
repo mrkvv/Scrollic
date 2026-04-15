@@ -1,15 +1,15 @@
 {
   "info": {
-    "_postman_id": "24e6a624-1bcd-4cc3-b352-4abfeea56c13",
+    "_postman_id": "58337230-7f90-48c0-8da9-a3c2a5411185",
     "name": "APIGateway Documentation",
-    "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic",
+    "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic\n\n## Общая информация:\n\n- Если приходит слишком много запросов от конкретного пользователя/ip, то в любом случае выбрасывается 429 Too Many Requests с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"Too many requests. Limit: <limit> per minute\"\n}\n\n ```\n\n- В каждый запрос (\\*почти) добавляется заголовок Authorization с Bearer Token'ом пользователя. Под капотом APIGateway: сверяется Bearer token и, если все хорошо, то в UserService пробрасываются заголовки \"X-User-Id\" и \"X-Username\", без токена. Тот уже в свою очередь делает то, что делает.\n    \n- Если пользователь не прошел по Bearer Token'у, то выбрасывается 401 Unauthorized с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"<message>\"\n}\n\n ```\n\n- На Bearer Token не проверяются только регистрация, логин и logout.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "53202645",
-    "_collection_link": "https://go.postman.co/collection/53202645-24e6a624-1bcd-4cc3-b352-4abfeea56c13?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/53202645-58337230-7f90-48c0-8da9-a3c2a5411185?source=collection_link"
   },
   "item": [
     {
-      "name": "Auth Interactions",
+      "name": "UserService interaction",
       "item": [
         {
           "name": "Регистрация нового пользователя",
@@ -44,7 +44,7 @@
                 "register"
               ]
             },
-            "description": "### Регистрация нового пользователя в базе данных (PostgreSQL).\n\nПринимаем запрос и проверяем их отправленное количество в последнее время. Если было слишком много, отдаем пользователю 429, а если все ок, то перенаправляем в UserService, а затем ожидаем его ответа.  \nВозможные статусы ответов:\n- 201 Created\n- 409 Conflict\n- 429 Too Many Requests\n    \n\n_Важно!: подумать про токены и после успешной реги мы сразу входим в аккаунт или сбрасываем пользователя на окно входа в аккаунт?_"
+            "description": "### Регистрация нового пользователя в базе данных (PostgreSQL).\n\nПринимаем запрос, проводим проверку на rate limit, если все ок, пробрасываем в UserService. Тот в свою очередь обрабатывает заявку и возвращает ответ.  \nВозможные статусы ответов:\n\n- 201 Created\n    \n- 409 Conflict\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять с любым запросом."
           },
           "response": [
             {
@@ -93,7 +93,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n    \"status\": \"success\"\r\n}"
+              "body": "{\r\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\r\n  \"token_type\": \"bearer\",\r\n  \"expires_in\": 3600,\r\n  \"user\": {\r\n    \"id\": 1,\r\n    \"name\": \"mrkv\",\r\n    \"created_at\": \"2026-04-15T23:06:00\"\r\n  }\r\n}"
             },
             {
               "name": "Username занят",
@@ -178,7 +178,7 @@
                 "login"
               ]
             },
-            "description": "### Запрос на начало сессии (выдача токена)\n\nКлиент ввел свои данные (логин, пароль), в ответ он получит _**токен**_, который он у себя запоминает. Далее этот токен будет прикрепляться к любому запросу для ауторизации.  \nТокены предлагаю хранить в Redis так: `session:{token} -> Hash: {user_id, userName, expiresAt}` \nВозможные статусы ответов:\n- 200 OK\n- 401 Unauthorized\n- 429 Too Many Requests"
+            "description": "### Запрос на вход в аккаунт\n\nКлиент ввел свои данные (логин, пароль), запрос пробрасывается в UserService, в котором далее и обрабатывается. Если с данными все ок, то возвращает токен, а если чтото не так, то получай 401....  \nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять с любым запросом."
           },
           "response": [
             {
@@ -233,7 +233,7 @@
                   "path": ""
                 }
               ],
-              "body": "{\r\n    \"status\": \"success\",\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature\"\r\n}"
+              "body": "{\r\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\r\n  \"token_type\": \"bearer\",\r\n  \"expires_in\": 3600,\r\n  \"user\": {\r\n    \"id\": 1,\r\n    \"name\": \"mrkv\",\r\n    \"created_at\": \"2026-04-15T23:07:00\"\r\n  }\r\n}"
             },
             {
               "name": "Пользователя нет",
@@ -304,11 +304,6 @@
                 "key": "Accept",
                 "value": "application/json",
                 "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
               }
             ],
             "body": {
@@ -328,7 +323,7 @@
                 "logout"
               ]
             },
-            "description": "### Анвалидация токена (выход)\n\nВ Authorization передается Bearer token. Этот запрос транслируется в UserService и уже тот в Redis ищет такой ключ (токен) и если находит, удаляет запись.\n\nВозможные статусы ответов:\n- 200 OK\n- 401 Unauthorized\n- 429 Too Many Requests"
+            "description": "### Удаление токена (выход)\n\nВ заголовок Authorization запроса передается Bearer token. APIGateway передает его в UserService, который удаляет сессию.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized"
           },
           "response": []
         },
@@ -346,16 +341,22 @@
               ]
             },
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
-              "raw": "/api/auth/me",
+              "raw": "/api/users/me",
               "path": [
                 "api",
-                "auth",
+                "users",
                 "me"
               ]
             },
-            "description": "### Запрос информации о пользователе\n\nОжидает Bearer token. В ответе возвращает полную информацию.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized\n- 429 Too Many Requests"
+            "description": "### Запрос информации о пользователе\n\nОжидает Bearer token. В ответе возвращает полную информацию о пользователе.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized"
           },
           "response": [
             {
@@ -384,12 +385,192 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"name\": \"mrkv\"\r\n    }\r\n}"
+              "body": "{\r\n  \"id\": 1,\r\n  \"name\": \"john_doe\",\r\n  \"created_at\": \"2024-01-15T10:30:00\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Сменить username",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"new_username\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "/api/users/me",
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Сменить имя пользователя. Так же принимает Bearer Token в заголовке Authorization.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"new_username\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/users/me",
+                  "path": [
+                    "api",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": "{\r\n  \"id\": 1,\r\n  \"name\": \"new_username\",\r\n  \"created_at\": \"2024-01-15T10:30:00\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Поменять пароль",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"old_password\": \"securepass123\",\r\n  \"new_password\": \"newpass456\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "/api/users/me/password",
+              "path": [
+                "api",
+                "users",
+                "me",
+                "password"
+              ]
+            },
+            "description": "Сменить пароль пользователя. Принимает Bearer Token.\n\nВозможные статусы ответа:\n\n- 204 No Content\n    \n- 401 Unauthorized"
+          },
+          "response": [
+            {
+              "name": "Успешно поменяли",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"old_password\": \"securepass123\",\r\n  \"new_password\": \"newpass456\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "/api/users/me/password",
+                  "path": [
+                    "api",
+                    "users",
+                    "me",
+                    "password"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": null
             }
           ]
         }
       ],
-      "description": "Раздел взаимодействия с UserService. Здесь находятся все взаимодейтсвия касательно пользователя и авторизации."
+      "description": "Раздел взаимодействия с UserService. Здесь находятся все взаимодейтсвия касательно пользователя и ауторизации."
     },
     {
       "name": "Feed Interactions",
