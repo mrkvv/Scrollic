@@ -45,7 +45,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
                     }
 
                     String userId = (String) sessionData.get("user_id");
-                    String username = (String) sessionData.get("userName");
+                    String username = (String) sessionData.get("user_name");
 
                     if (userId == null || username == null) {
                         return unauthorized(exchange, "Invalid session data");
