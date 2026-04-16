@@ -1,3 +1,4 @@
+---
 spring:
   application:
     name: news-fetcher-service
@@ -7,10 +8,11 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      value-serializer: >
+        org.springframework.kafka.support.serializer.JacksonJsonSerializer
       properties:
         enable.idempotence: true
 
 news:
   fetch-interval: ${FETCHING_INTERVAL_MS:60000}
-  apikey: ${GNEWS_APIKEY}
+  apikey: ${GNEWS_APIKEY:4a1750bcb445061572b1270680bc5c77}
