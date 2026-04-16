@@ -1,24 +1,29 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from .. import schemas
-from ..dependencies import get_current_user_id
 from ..database import get_db
 from ..models import User
-from ..auth import verify_password, get_password_hash
+from ..auth import verify_password, get_password_hash, create_access_token
 from ..redis_client import get_redis
-from datetime import datetime
+from ..config import config
 import redis
 import json
-import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
+security = HTTPBearer()
 
 
 @router.post("/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(user_data: schemas.UserRegister, db: Session = Depends(get_db)):
+def register(
+        user_data: schemas.UserRegister,
+        db: Session = Depends(get_db),
+        redis_client: redis.Redis = Depends(get_redis)
+):
     """Регистрация пользователя"""
 
+    # Проверка существующего пользователя
     existing_user = db.query(User).filter(User.name == user_data.name).first()
     if existing_user:
         raise HTTPException(
@@ -26,10 +31,11 @@ def register(user_data: schemas.UserRegister, db: Session = Depends(get_db)):
             detail="Username already registered"
         )
 
+    # Создание нового пользователя
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         name=user_data.name,
-        password_hash=hashed_password,
+        password=hashed_password,
         created_at=datetime.utcnow()
     )
 
@@ -37,11 +43,25 @@ def register(user_data: schemas.UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # Токен приходит от API Gateway, здесь мы его не генерируем
+    # Генерация токена (Bearer Token)
+    access_token = create_access_token(data={"sub": str(new_user.id)})
+
+    # Сохраняем сессию в Redis: ключ = сам токен
+    if redis_client:
+        redis_client.hset(
+            f"session:{access_token}",
+            mapping={
+                "user_id": new_user.id,
+                "user_name": new_user.name,
+                "expires_at": (datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)).isoformat()
+            }
+        )
+        redis_client.expire(f"session:{access_token}", config.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+
     return {
-        "access_token": "token_from_api_gateway_will_be_here",
+        "access_token": access_token,
         "token_type": "bearer",
-        "expires_in": 3600,
+        "expires_in": config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "user": {
             "id": new_user.id,
             "name": new_user.name,
@@ -56,7 +76,7 @@ def login(
         db: Session = Depends(get_db),
         redis_client: redis.Redis = Depends(get_redis)
 ):
-    """Логин пользователя - создаем сессию в Redis"""
+    """Логин пользователя"""
 
     user = db.query(User).filter(User.name == user_data.name).first()
     if not user:
@@ -65,35 +85,31 @@ def login(
             detail="Invalid username or password"
         )
 
-    if not verify_password(user_data.password, user.password_hash):
+    if not verify_password(user_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
 
-    # Создаем сессию в Redis (если Redis доступен)
-    if redis_client:
-        session_id = str(uuid.uuid4())
-        session_data = {
-            "user_id": user.id,
-            "user_name": user.name,
-            "login_time": datetime.utcnow().isoformat()
-        }
-        # Храним сессию 3600 секунд (как время жизни токена)
-        redis_client.setex(
-            f"session:{session_id}",
-            3600,
-            json.dumps(session_data)
-        )
-        print(f"✅ Session created for user {user.name}: {session_id}")
-    else:
-        print("⚠️ Redis not available, session not created")
+    # Генерация токена (Bearer Token)
+    access_token = create_access_token(data={"sub": str(user.id)})
 
-    # Токен приходит от API Gateway, здесь мы его не генерируем
+    # Сохраняем сессию в Redis: ключ = сам токен
+    if redis_client:
+        redis_client.hset(
+            f"session:{access_token}",
+            mapping={
+                "user_id": user.id,
+                "user_name": user.name,
+                "expires_at": (datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)).isoformat()
+            }
+        )
+        redis_client.expire(f"session:{access_token}", config.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+
     return {
-        "access_token": "token_from_api_gateway_will_be_here",
+        "access_token": access_token,
         "token_type": "bearer",
-        "expires_in": 3600,
+        "expires_in": config.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "user": {
             "id": user.id,
             "name": user.name,
@@ -104,40 +120,16 @@ def login(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
-        user_id: int = Depends(get_current_user_id),
-        db: Session = Depends(get_db),
-        redis_client: redis.Redis = Depends(get_redis),
-        credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+        credentials: HTTPAuthorizationCredentials = Depends(security),
+        redis_client: redis.Redis = Depends(get_redis)
 ):
-    """Выход из системы - удаляем сессию и добавляем токен в blacklist"""
-
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    """Выход из системы - удаляем запись из Redis по токену"""
 
     token = credentials.credentials
 
     if redis_client:
-        # 1. Добавляем токен в blacklist
-        token_key = f"blacklist:{token}"
-        redis_client.setex(token_key, 3600, "revoked")
-
-        # 2. Удаляем все сессии пользователя (опционально)
-        # Ищем и удаляем сессии этого пользователя
-        session_keys = redis_client.keys("session:*")
-        for session_key in session_keys:
-            session_data = redis_client.get(session_key)
-            if session_data:
-                data = json.loads(session_data)
-                if data.get("user_id") == user_id:
-                    redis_client.delete(session_key)
-                    print(f"✅ Session deleted for user {user.name}: {session_key}")
-
-        print(f"✅ Token blacklisted and sessions cleared for user {user.name}")
-    else:
-        print(f"⚠️ Redis not available, token not blacklisted and sessions not cleared")
+        # Удаляем сессию по ключу = сам токен
+        redis_client.delete(f"session:{token}")
+        print(f"Session deleted for token: {token[:20]}...")
 
     return None
