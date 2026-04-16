@@ -1,0 +1,232 @@
+{
+  "info": {
+    "name": "ActionService API",
+    "description": "API для управления действиями пользователя (лайки, просмотры) и пересчета весов. Асинхронная обработка через Redis Streams. Внутренний микросервис, вызывается через API Gateway.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "item": [
+    {
+      "name": "Actions",
+      "description": "Управление действиями пользователя",
+      "item": [
+        {
+          "name": "Batch Actions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text",
+                "description": "Пробрасывается от Gateway после валидации токена"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"client_timestamp\": 1700000000000,\n  \"actions\": [\n    {\n      \"action_id\": \"action-uuid-1\",\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n      \"action\": \"like\",\n      \"timestamp\": 1700000000000,\n      \"retry_count\": 0\n    },\n    {\n      \"action_id\": \"action-uuid-2\",\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174001\",\n      \"action\": \"seen\",\n      \"timestamp\": 1700000001000,\n      \"retry_count\": 0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://action-service:8002/api/actions/batch",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["api", "actions", "batch"]
+            },
+            "description": "Отправить пачку действий. X-User-Id пробрасывается от Gateway."
+          },
+          "response": [
+            {
+              "name": "Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Пачка действий принята\",\n  \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"received\": 2,\n  \"processed\": 2\n}"
+            }
+          ]
+        },
+        {
+          "name": "Like News",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+            },
+            "url": {
+              "raw": "http://action-service:8002/api/actions/like",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["api", "actions", "like"]
+            },
+            "description": "Поставить лайк. User ID из заголовка X-User-Id"
+          },
+          "response": [
+            {
+              "name": "Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Лайк принят\",\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unlike News",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://action-service:8002/api/actions/like/123e4567-e89b-12d3-a456-426614174000",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["api", "actions", "like", "123e4567-e89b-12d3-a456-426614174000"]
+            }
+          },
+          "response": [
+            {
+              "name": "Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Лайк удалён\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark as Seen",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+            },
+            "url": {
+              "raw": "http://action-service:8002/api/actions/seen",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["api", "actions", "seen"]
+            }
+          },
+          "response": [
+            {
+              "name": "Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Просмотр зафиксирован\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Action Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://action-service:8002/api/actions/status/123e4567-e89b-12d3-a456-426614174000",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["api", "actions", "status", "123e4567-e89b-12d3-a456-426614174000"]
+            },
+            "description": "Проверить статус (лайкнул/посмотрел). Синхронный запрос."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"liked\": true,\n  \"seen\": false\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "Проверка работоспособности",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://action-service:8002/health",
+              "host": ["action-service"],
+              "port": "8002",
+              "path": ["health"]
+            }
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"healthy\",\n  \"cassandra\": \"up\",\n  \"redis\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "user_id",
+      "value": "123e4567-e89b-12d3-a456-426614174099",
+      "type": "string"
+    }
+  ]
+}
