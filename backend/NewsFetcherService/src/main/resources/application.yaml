@@ -15,4 +15,4 @@ spring:
 
 news:
   fetch-interval: ${FETCHING_INTERVAL_MS:60000}
-  apikey: ${GNEWS_APIKEY:4a1750bcb445061572b1270680bc5c77}
+  apikey: ${GNEWS_APIKEY}
