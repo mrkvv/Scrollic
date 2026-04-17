@@ -1,0 +1,54 @@
+CREATE TABLE news_batch (
+batch_id TEXT PRIMARY KEY,
+created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+is_current INTEGER DEFAULT 0
+);
+
+CREATE TABLE news_item (
+id TEXT PRIMARY KEY,
+batch_id TEXT NOT NULL,
+position_in_batch INTEGER NOT NULL,
+head TEXT NOT NULL,
+summary TEXT,
+text TEXT,
+url TEXT,
+url_picture TEXT,
+popularity INTEGER DEFAULT 0,
+theme_id INTEGER,
+created_at TEXT,
+is_seen INTEGER DEFAULT 0,
+is_liked INTEGER DEFAULT 0
+);
+
+CREATE TABLE user (
+id INTEGER PRIMARY KEY,
+name TEXT NOT NULL,
+token TEXT NOT NULL,
+logged_in_at TEXT DEFAULT CURRENT_TIMESTAMP,
+avatar_url TEXT
+);
+
+-- UserService
+insertUser:
+INSERT INTO user(id, name, token, avatar_url)
+VALUES(?, ?, ?, ?);
+
+selectUserById:
+SELECT * FROM user WHERE id = ?;
+
+selectCurrentUser:
+SELECT * FROM user LIMIT 1;
+
+updateUserName:
+UPDATE user SET name = ? WHERE id = ?;
+
+updateUserToken:
+UPDATE user SET token = ? WHERE id = ?;
+
+updateUserAvatar:
+UPDATE user SET avatar_url = ? WHERE id = ?;
+
+
+
+
+
