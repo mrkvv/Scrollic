@@ -50,6 +50,8 @@ fun AuthScreen(
 
     var isLogin by remember { mutableStateOf(true) }
 
+    val blurRadius = if (showSheet) 8f else 0f
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {

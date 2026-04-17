@@ -1,5 +1,7 @@
 package com.example.scrollic.screens.extra
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.innerShadow
@@ -190,45 +193,65 @@ fun RegistrationButton(
 
 @Composable
 fun GlassSheet(
+    visible: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.75f),
-                        Color.White.copy(alpha = 1f)
+    // Анимация размытия
+    val blurRadius by animateDpAsState(
+        targetValue = if (visible) 8.dp else 0.dp,
+        animationSpec = tween(durationMillis = 300),
+        label = "glass_blur"
+    )
+
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Фоновый слой с размытием (находится под контентом)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .blur(radiusX = blurRadius, radiusY = blurRadius)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.95f)
+                        )
                     )
                 )
-            )
-            .innerShadow(
-                shape = shape,
-                shadow = Shadow(
-                    radius = 1.5.dp,
-                    spread = 0.dp,
-                    offset = DpOffset(2.dp, 2.dp),
-                    color = Color.White,
-                    alpha = 0.4f
+                .innerShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = 1.5.dp,
+                        spread = 0.dp,
+                        offset = DpOffset(2.dp, 2.dp),
+                        color = Color.White,
+                        alpha = 0.4f
+                    )
                 )
-            )
+                .innerShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = 6.dp,
+                        spread = 0.dp,
+                        offset = DpOffset((-3).dp, (-3).dp),
+                        color = Color.White,
+                        alpha = 0.25f
+                    )
+                )
+        )
 
-            .innerShadow(
-                shape = shape,
-                shadow = Shadow(
-                    radius = 6.dp,
-                    spread = 0.dp,
-                    offset = DpOffset((-3).dp, (-3).dp),
-                    color = Color.White,
-                    alpha = 0.25f
-                )
-            )
-    ) {
-        content()
+        // Контентный слой (без размытия) поверх фона
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+        ) {
+            content()
+        }
     }
 }
 
