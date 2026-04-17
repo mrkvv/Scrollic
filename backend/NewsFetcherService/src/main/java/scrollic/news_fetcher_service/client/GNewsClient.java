@@ -26,6 +26,12 @@ public class GNewsClient {
     @Value("${news.apikey}")
     private String apiKey;
 
+    @Value("${news.retry.max-attempts}")
+    private int maxRetryAttempts;
+
+    @Value("${news.retry.initial-delay-ms}")
+    private long initialDelay;
+
     public GNewsClient() {
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofSeconds(30))
@@ -38,13 +44,51 @@ public class GNewsClient {
     }
 
     public List<NewsArticle> getNewsByCategory(GNewsCategory category) {
-        LOGGER.info("Получение новостей для категории {}", category.getValue());
-
         String fromDate = Instant.now()
                 .minus(24, ChronoUnit.HOURS)
                 .toString();
 
-        GNewsResponse response = webClient.get()
+        long delay = initialDelay;
+
+        for (int attempt = 1; attempt <= maxRetryAttempts; attempt++) {
+            try {
+                LOGGER.info("Получение новостей для категории {}, попытка {}",
+                        category.getValue(), attempt);
+
+                GNewsResponse response = getResponse(category, fromDate);
+
+                if (response != null && response.getArticles() != null) {
+                    LOGGER.info("Категория {}: получено {} статей",
+                            category.getValue(), response.getArticles().size());
+                    return response.getArticles();
+                }
+            }
+            catch(Exception e) {
+                LOGGER.warn("Категория {}: ошибка при попытке {}/{}: {}",
+                        category.getValue(), attempt, maxRetryAttempts, e.getMessage());
+
+                if(attempt < maxRetryAttempts) {
+                    try {
+                        LOGGER.info("Ожидание {} мс перед следующей попыткой", delay);
+                        Thread.sleep(delay);
+                        delay *= 2;
+                    }
+                    catch(InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        LOGGER.error("Ожидание прервано, прекращаем попытки для категории {}",
+                                category.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+
+        LOGGER.error("Категория {}: исчерпаны все попытки, пропуск", category.getValue());
+        return List.of();
+    }
+
+    private GNewsResponse getResponse(GNewsCategory category, String fromDate) {
+        return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/top-headlines")
                         .queryParam("lang", "ru")
@@ -58,8 +102,6 @@ public class GNewsClient {
                 .retrieve()
                 .bodyToMono(GNewsResponse.class)
                 .block();
-
-        return (response != null) ? response.getArticles() : List.of();
     }
 
     public List<NewsArticle> getNewsByAllCategories() {
