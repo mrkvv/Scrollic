@@ -108,15 +108,28 @@ services:
     image: apache/kafka:4.0.2
     container_name: scrollic-kafka
     ports:
-      - "${KAFKA_PORT}:9092"
-      - "${KAFKA_CONTROLLER_PORT}:9093"
+      - "${KAFKA_EXTERNAL_PORT}:9092"     # для dev подключений с хоста
+      - "${KAFKA_CONTROLLER_PORT}:9093"   # для внутренней работы самой Kafka
+      - "${KAFKA_INTERNAL_PORT}:9094"     # для подключений изнутри docker'а
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
 
-      # PLAINTEXT://localhost:9092 для тестов
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: >
+        EXTERNAL://0.0.0.0:9092,
+        CONTROLLER://0.0.0.0:9093,
+        INTERNAL://0.0.0.0:9094
+
+      KAFKA_ADVERTISED_LISTENERS: >
+        EXTERNAL://localhost:9092,
+        INTERNAL://kafka:9094
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: >
+        EXTERNAL:PLAINTEXT,
+        CONTROLLER:PLAINTEXT,
+        INTERNAL:PLAINTEXT
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
@@ -126,8 +139,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Q"
 
-      # Для разработки пока стоит true
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 24
     volumes:
       - kafka_data:/var/lib/kafka/data
@@ -152,7 +163,7 @@ services:
       - "${KAFKA_UI_PORT}:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: scrollic-dev
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9094
       KAFKA_UI_READ_ONLY: false
     networks:
       - scrollic-network
@@ -214,6 +225,21 @@ services:
       timeout: 5s
       retries: 3
       start_period: 45s
+
+
+  news-fetcher-service:
+    build: ./backend/NewsFetcherService
+    container_name: scrollic-news-fetcher-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_NEWS_TOPIC_NAME: ${KAFKA_NEWS_TOPIC_NAME}
+      FETCHING_INTERVAL_MS: ${FETCHING_INTERVAL_MS}
+      GNEWS_APIKEY: ${GNEWS_APIKEY}
+    networks:
+      - scrollic-network
 
 
 volumes:
