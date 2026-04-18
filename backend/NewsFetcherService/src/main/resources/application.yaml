@@ -19,4 +19,3 @@ news:
   retry:
     max-attempts: 5
     initial-delay-ms: 10000
-

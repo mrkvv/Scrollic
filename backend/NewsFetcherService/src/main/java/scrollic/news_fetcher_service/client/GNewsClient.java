@@ -3,10 +3,15 @@ package scrollic.news_fetcher_service.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.util.retry.Retry;
+import scrollic.news_fetcher_service.client.exception.GNewsException;
 import scrollic.news_fetcher_service.dto.GNewsResponse;
 import scrollic.news_fetcher_service.dto.NewsArticle;
 import scrollic.news_fetcher_service.model.GNewsCategory;
@@ -48,46 +53,24 @@ public class GNewsClient {
                 .minus(24, ChronoUnit.HOURS)
                 .toString();
 
-        long delay = initialDelay;
-
-        for (int attempt = 1; attempt <= maxRetryAttempts; attempt++) {
-            try {
-                LOGGER.info("Получение новостей для категории {}, попытка {}",
-                        category.getValue(), attempt);
-
-                GNewsResponse response = getResponse(category, fromDate);
-
-                if (response != null && response.getArticles() != null) {
-                    LOGGER.info("Категория {}: получено {} статей",
-                            category.getValue(), response.getArticles().size());
-                    return response.getArticles();
-                }
-            }
-            catch(Exception e) {
-                LOGGER.warn("Категория {}: ошибка при попытке {}/{}: {}",
-                        category.getValue(), attempt, maxRetryAttempts, e.getMessage());
-
-                if(attempt < maxRetryAttempts) {
-                    try {
-                        LOGGER.info("Ожидание {} мс перед следующей попыткой", delay);
-                        Thread.sleep(delay);
-                        delay *= 2;
-                    }
-                    catch(InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        LOGGER.error("Ожидание прервано, прекращаем попытки для категории {}",
-                                category.getValue());
-                        break;
-                    }
-                }
+        try {
+            GNewsResponse response = requestNewsAsync(category, fromDate).block();
+            if (response != null && response.getArticles() != null) {
+                LOGGER.info("Категория {}: получено {} статей",
+                        category.getValue(), response.getArticles().size());
+                return response.getArticles();
             }
         }
-
-        LOGGER.error("Категория {}: исчерпаны все попытки, пропуск", category.getValue());
+        catch (GNewsException e) {
+            LOGGER.error("Категория {}: {}", category.getValue(), e.getMessage());
+        }
+        catch (Exception e) {
+            LOGGER.error("Ошибка: {}", e.getMessage());
+        }
         return List.of();
     }
 
-    private GNewsResponse getResponse(GNewsCategory category, String fromDate) {
+    private Mono<GNewsResponse> requestNewsAsync(GNewsCategory category, String fromDate) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/top-headlines")
@@ -100,8 +83,38 @@ public class GNewsClient {
                         .queryParam("apikey", apiKey)
                         .build())
                 .retrieve()
+                .onStatus(HttpStatusCode::is5xxServerError,
+                        response -> Mono.error(new GNewsException("Ошибка сервера", 500)))
+                .onStatus(status -> (status == HttpStatus.TOO_MANY_REQUESTS),
+                        response -> Mono.error(new GNewsException("TOO_MANY_REQUESTS", 429)))
+                .onStatus(HttpStatusCode::is4xxClientError,
+                        response -> Mono.error(
+                                new GNewsException("Ошибка клиента " + response.statusCode(),
+                                        response.statusCode().value())))
                 .bodyToMono(GNewsResponse.class)
-                .block();
+                .retryWhen(createRetryStrategy(category));
+    }
+
+    private Retry createRetryStrategy(GNewsCategory category) {
+        return Retry.backoff(maxRetryAttempts, Duration.ofMillis(initialDelay))
+                .filter(this::isRetryableError)
+                .doBeforeRetry(retrySignal ->
+                        LOGGER.info("Категория {} retry #{} по причине: {}",
+                                category.getValue(), retrySignal.totalRetries() + 1,
+                                retrySignal.failure().getMessage()))
+                .onRetryExhaustedThrow((spec, signal) ->
+                        new GNewsException("Исчерпаны все попытки", -1));
+    }
+
+    private boolean isRetryableError(Throwable throwable) {
+        if(throwable instanceof GNewsException ex) {
+            return ex.isRetryable();
+        }
+
+        // сетевые ошибки
+        return throwable instanceof java.net.SocketException
+                || throwable instanceof java.net.SocketTimeoutException
+                || throwable instanceof java.util.concurrent.TimeoutException;
     }
 
     public List<NewsArticle> getNewsByAllCategories() {
