@@ -20,6 +20,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-cassandra-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-kafka")
+	implementation("org.springframework.boot:spring-boot-starter-json")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-cassandra-reactive-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-kafka-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
