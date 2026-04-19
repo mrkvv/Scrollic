@@ -108,7 +108,10 @@ public class NewsProcessorService {
     private NewsByDateEntity mapToNewsByDateEntity(NewsArticle article, UUID id) {
         NewsByDateEntity entity = new NewsByDateEntity();
 
-        entity.setDateBucket(formatDateBucket(article.getPublishedAt()));
+        Instant dateBucket = article.getPublishedAt()
+                .plus(7, java.time.temporal.ChronoUnit.DAYS);
+
+        entity.setDateBucket(formatDateBucket(dateBucket));
         entity.setCreatedAt(article.getPublishedAt());
         entity.setId(id);
 
