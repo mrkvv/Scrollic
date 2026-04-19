@@ -21,6 +21,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-cassandra-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-kafka")
 	implementation("org.springframework.boot:spring-boot-starter-json")
+
+	// for health check only
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-data-cassandra-reactive-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-kafka-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
