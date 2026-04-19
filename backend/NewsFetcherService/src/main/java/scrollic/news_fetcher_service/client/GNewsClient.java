@@ -1,5 +1,8 @@
 package scrollic.news_fetcher_service.client;
 
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,7 @@ import scrollic.news_fetcher_service.dto.GNewsResponse;
 import scrollic.news_fetcher_service.dto.NewsArticle;
 import scrollic.news_fetcher_service.model.GNewsCategory;
 
+import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -38,14 +42,29 @@ public class GNewsClient {
     private long initialDelay;
 
     public GNewsClient() {
-        HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofSeconds(30))
-                .keepAlive(false);
+        try {
+            SslContext sslContext = SslContextBuilder.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                    .build();
 
-        this.webClient = WebClient.builder()
-                .baseUrl("https://gnews.io/api/v4")
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
+            HttpClient httpClient = HttpClient.create()
+                    .secure(sslSpec -> sslSpec
+                            .sslContext(sslContext)
+                            .handshakeTimeout(Duration.ofSeconds(60)))
+                    .responseTimeout(Duration.ofSeconds(60))
+                    .keepAlive(false)
+                    .followRedirect(true);
+
+            this.webClient = WebClient.builder()
+                    .baseUrl("https://gnews.io/api/v4")
+                    .clientConnector(new ReactorClientHttpConnector(httpClient))
+                    .build();
+        }
+        catch (SSLException e) {
+            LOGGER.error("Не удалось создать SSL контекст", e);
+            throw new RuntimeException("Не удалось создать SSL контекст", e);
+        }
+
     }
 
     public List<NewsArticle> getNewsByCategory(GNewsCategory category) {
@@ -114,7 +133,8 @@ public class GNewsClient {
         // сетевые ошибки
         return throwable instanceof java.net.SocketException
                 || throwable instanceof java.net.SocketTimeoutException
-                || throwable instanceof java.util.concurrent.TimeoutException;
+                || throwable instanceof java.util.concurrent.TimeoutException
+                || throwable instanceof io.netty.handler.ssl.SslHandshakeTimeoutException;
     }
 
     public List<NewsArticle> getNewsByAllCategories() {
