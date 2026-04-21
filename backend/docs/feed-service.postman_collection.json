@@ -1,9 +1,9 @@
 {
   "info": {
     "name": "FeedService API",
-    "description": "Сервис формирования персонализированной ленты новостей. Только чтение из Cassandra. Не управляет просмотрами и лайками.",
+    "description": "Сервис формирования персонализированной ленты новостей. Внутренний микросервис, вызывается через API Gateway. Только чтение из Cassandra. Без кэширования.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "1.0.0"
+    "version": "3.0.0"
   },
   "item": [
     {
@@ -16,9 +16,10 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
-                "type": "text"
+                "key": "X-User-Id",
+                "value": "{{user_id}}",
+                "type": "text",
+                "description": "Пробрасывается от Gateway после валидации JWT токена"
               },
               {
                 "key": "Accept",
@@ -26,31 +27,26 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/feed?limit=50",
-              "host": ["{{base_url}}"],
+              "raw": "http://feed-service:8001/api/feed?limit=50",
+              "host": ["feed-service"],
+              "port": "8001",
               "path": ["api", "feed"],
               "query": [
                 {
                   "key": "limit",
                   "value": "50",
-                  "description": "Количество новостей (макс. 100, по умолчанию 50)"
+                  "description": "Количество новостей (макс. 100, по умолчанию 20)"
                 }
               ]
             },
-            "description": "Получить персонализированную ленту новостей.\n\n**Алгоритм формирования:**\n1. Получить веса тем пользователя из таблицы `user_theme_weights`\n2. Получить все новости из таблицы `news` за последние 7 дней\n3. Исключить просмотренные новости (таблица `user_seen_news`)\n4. Исключить лайкнутые новости (таблица `user_liked_news`)\n5. Распределить новости по темам согласно весам пользователя\n6. Внутри каждой темы выбрать самые популярные новости (по `popularity`)\n7. Отсортировать глобально по популярности\n8. Вернуть результат\n\n**Кэширование:** результат кэшируется в Redis на 30 секунд.\n\n**Важно:** FeedService только читает данные из Cassandra. Запись просмотров и лайков осуществляется ActionService."
+            "description": "Получить персонализированную ленту новостей.\n\n**Алгоритм формирования:**\n1. Получить веса тем пользователя из таблицы `user_theme_weights`\n2. Получить новости за последние 7 дней из таблицы `news_by_date`\n3. Исключить просмотренные новости из таблицы `user_seen` (лайкнутые входят в их число)\n4. Для каждой новости вычислить рейтинг = `вес_темы * popularity`\n5. Отсортировать по убыванию рейтинга\n6. Вернуть результат\n\n**Важно:** FeedService только читает данные. Запись просмотров и лайков осуществляется ActionService."
           },
           "response": [
             {
               "name": "Success",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"feed\": [\n    {\n      \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n      \"head\": \"Заголовок новости\",\n      \"sum\": \"Краткое описание\",\n      \"text\": \"Полный текст\",\n      \"url\": \"https://example.com/news/1\",\n      \"url_picture\": \"https://example.com/image.jpg\",\n      \"popularity\": 1542,\n      \"theme_id\": 1,\n      \"created_at\": \"2024-03-25T10:30:00\"\n    }\n  ],\n  \"total\": 50,\n  \"limit\": 50\n}"
-            },
-            {
-              "name": "Unauthorized",
-              "status": "Unauthorized",
-              "code": 401,
-              "body": "{\n  \"detail\": \"Недействительный токен\"\n}"
+              "body": "{\n  \"feed\": [\n    {\n      \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n      \"head\": \"Заголовок новости\",\n      \"sum\": \"Краткое описание\",\n      \"url\": \"https://example.com/news/1\",\n      \"url_picture\": \"https://example.com/image.jpg\",\n      \"theme_id\": 1,\n      \"popularity\": 1542,\n      \"created_at\": \"2024-03-25T10:30:00\"\n    }\n  ],\n  \"total\": 50,\n  \"limit\": 50\n}"
             },
             {
               "name": "Bad Request",
@@ -64,37 +60,25 @@
     },
     {
       "name": "Health",
-      "description": "Проверка работоспособности сервиса",
+      "description": "Проверка работоспособности",
       "item": [
         {
           "name": "Health Check",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
             "url": {
-              "raw": "{{base_url}}/health",
-              "host": ["{{base_url}}"],
+              "raw": "http://feed-service:8001/health",
+              "host": ["feed-service"],
+              "port": "8001",
               "path": ["health"]
-            },
-            "description": "Проверка доступности Cassandra и Redis. Используется для мониторинга."
+            }
           },
           "response": [
             {
-              "name": "All services healthy",
+              "name": "Healthy",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"status\": \"healthy\",\n  \"cassandra\": \"up\",\n  \"redis\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00\"\n}"
-            },
-            {
-              "name": "Cassandra down",
-              "status": "Service Unavailable",
-              "code": 503,
-              "body": "{\n  \"status\": \"unhealthy\",\n  \"cassandra\": \"down\",\n  \"redis\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00\"\n}"
+              "body": "{\n  \"status\": \"healthy\",\n  \"cassandra\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00Z\"\n}"
             }
           ]
         }
@@ -103,14 +87,10 @@
   ],
   "variable": [
     {
-      "key": "base_url",
-      "value": "http://localhost:8001",
-      "type": "string"
-    },
-    {
-      "key": "access_token",
-      "value": "",
-      "type": "string"
+      "key": "user_id",
+      "value": "123456",
+      "type": "string",
+      "description": "ID пользователя (INT в Cassandra)"
     }
   ]
 }
