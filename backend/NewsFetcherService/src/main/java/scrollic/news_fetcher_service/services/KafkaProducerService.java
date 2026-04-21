@@ -2,7 +2,6 @@ package scrollic.news_fetcher_service.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -17,11 +16,14 @@ public class KafkaProducerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerService.class);
 
-    @Autowired
-    private KafkaTemplate<String, NewsArticle> kafkaTemplate;
+    private final KafkaTemplate<String, NewsArticle> kafkaTemplate;
 
     @Value("${spring.kafka.topic.news}")
     private String newsTopic;
+
+    public KafkaProducerService(KafkaTemplate<String, NewsArticle> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public void sendNews(NewsArticle article) {
         String key = article.getUrl();

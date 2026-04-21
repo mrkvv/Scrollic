@@ -1,6 +1,5 @@
 package scrollic.APIGateway.filters;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -18,14 +17,17 @@ import java.util.List;
 @Component
 public class AuthFilter implements GlobalFilter, Ordered {
 
-    @Autowired
-    private RedisSessionService sessionService;
+    private final RedisSessionService sessionService;
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/auth/register",
             "/api/auth/login",
             "/api/auth/logout"
     );
+
+    public AuthFilter(RedisSessionService sessionService) {
+        this.sessionService = sessionService;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

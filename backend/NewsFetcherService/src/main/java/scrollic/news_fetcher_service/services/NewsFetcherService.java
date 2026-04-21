@@ -2,7 +2,6 @@ package scrollic.news_fetcher_service.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import scrollic.news_fetcher_service.client.GNewsClient;
@@ -19,11 +18,14 @@ public class NewsFetcherService {
 
     private final Set<String> sentUrls = ConcurrentHashMap.newKeySet();
 
-    @Autowired
-    private GNewsClient gNewsClient;
+    private final GNewsClient gNewsClient;
 
-    @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private final KafkaProducerService kafkaProducerService;
+
+    public NewsFetcherService(GNewsClient gNewsClient, KafkaProducerService kafkaProducerService) {
+        this.gNewsClient = gNewsClient;
+        this.kafkaProducerService = kafkaProducerService;
+    }
 
     @Scheduled(fixedDelayString = "${news.fetch-interval}")
     public void publishNews() {
