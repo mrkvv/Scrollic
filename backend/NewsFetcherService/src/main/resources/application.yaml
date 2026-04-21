@@ -14,5 +14,8 @@ spring:
         enable.idempotence: true
 
 news:
-  fetch-interval: ${FETCHING_INTERVAL_MS:60000}
+  fetch-interval: ${FETCHING_INTERVAL_MS:300000}
   apikey: ${GNEWS_APIKEY}
+  retry:
+    max-attempts: 5
+    initial-delay-ms: 10000
