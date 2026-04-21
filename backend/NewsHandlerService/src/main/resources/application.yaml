@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: news-handler-service
+  kafka:
+    topic:
+      news: ${KAFKA_NEWS_TOPIC_NAME:news-topic}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: news-handler-group
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS:localhost}
+    port: ${CASSANDRA_PORT:9042}
+    local-datacenter: ${CASSANDRA_DC:datacenter1}
+    keyspace-name: ${CASSANDRA_KEYSPACE:scrollic}
