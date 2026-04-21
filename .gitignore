@@ -4,18 +4,10 @@ env/
 !.env.example
 *.key
 
-# Android Studio
-*.iml
-.gradle
-/local.properties
-/.idea/*
+# Idea
+**/.idea/
+**/.idea/*
 !.idea/runConfigurations
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
 
 # Volumes
 pg_data/
