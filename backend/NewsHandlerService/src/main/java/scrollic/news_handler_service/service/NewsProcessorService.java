@@ -2,7 +2,6 @@ package scrollic.news_handler_service.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import scrollic.news_handler_service.dto.NewsArticle;
@@ -34,7 +33,6 @@ public class NewsProcessorService {
     private static final DateTimeFormatter DATE_BUCKET_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    @Autowired
     public NewsProcessorService(
             NewsRepository newsRepository,
             NewsByDateRepository newsByDateRepository,
