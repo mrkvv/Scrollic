@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "UserService API",
-    "description": "API для управления пользователями с Bearer Token аутентификацией и Redis-сессиями",
+    "description": "API для управления пользователями. Сервис сам генерирует JWT токены и управляет сессиями в Redis.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "version": "1.0.0"
   },
@@ -12,37 +12,6 @@
       "item": [
         {
           "name": "Register",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    const response = pm.response.json();",
-                  "    pm.collectionVariables.set('access_token', response.access_token);",
-                  "    console.log('Token saved:', response.access_token);",
-                  "}",
-                  "",
-                  "pm.test('Status code is 201', () => {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test('Response has access_token', () => {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('access_token');",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', () => {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('user');",
-                  "    pm.expect(jsonData.user).to.have.property('id');",
-                  "    pm.expect(jsonData.user).to.have.property('name');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -60,44 +29,23 @@
               "raw": "{\n  \"name\": \"john_doe\",\n  \"password\": \"securepass123\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/auth/register",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/auth/register",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "auth", "register"]
             },
-            "description": "Регистрация нового пользователя. Возвращает Bearer токен, который автоматически сохраняется в переменную collection."
-          }
+            "description": "Регистрация нового пользователя. Возвращает Bearer токен для дальнейших запросов."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 201,
+              "body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n  \"token_type\": \"bearer\",\n  \"expires_in\": 3600,\n  \"user\": {\n    \"id\": 123456,\n    \"name\": \"john_doe\",\n    \"created_at\": \"2024-03-25T10:30:00Z\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    const response = pm.response.json();",
-                  "    pm.collectionVariables.set('access_token', response.access_token);",
-                  "    console.log('Token saved:', response.access_token);",
-                  "}",
-                  "",
-                  "pm.test('Status code is 200', () => {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has access_token', () => {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('access_token');",
-                  "});",
-                  "",
-                  "pm.test('Token type is bearer', () => {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.token_type).to.eql('bearer');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -115,28 +63,23 @@
               "raw": "{\n  \"name\": \"john_doe\",\n  \"password\": \"securepass123\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/auth/login",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/auth/login",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "auth", "login"]
             },
-            "description": "Вход в аккаунт. Возвращает Bearer токен, который автоматически сохраняется в переменную collection."
-          }
+            "description": "Вход в аккаунт. Возвращает Bearer токен."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n  \"token_type\": \"bearer\",\n  \"expires_in\": 3600,\n  \"user\": {\n    \"id\": 123456,\n    \"name\": \"john_doe\",\n    \"created_at\": \"2024-03-25T10:30:00Z\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Logout",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 204', () => {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -146,21 +89,24 @@
                 "type": "text"
               },
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Accept",
                 "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/auth/logout",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/auth/logout",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "auth", "logout"]
             },
-            "description": "Выход из аккаунта. Инвалидирует токен в Redis. После выхода токен больше не работает."
-          }
+            "description": "Выход из аккаунта. Инвалидирует сессию в Redis."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204
+            }
+          ]
         }
       ]
     },
@@ -170,26 +116,6 @@
       "item": [
         {
           "name": "Get Current User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', () => {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Response has user data', () => {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('id');",
-                  "    pm.expect(jsonData).to.have.property('name');",
-                  "    pm.expect(jsonData).to.have.property('created_at');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [
@@ -204,28 +130,23 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/users/me",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/users/me",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "users", "me"]
             },
-            "description": "Получить информацию о текущем пользователе (извлекается из Bearer токена)."
-          }
+            "description": "Получить информацию о текущем пользователе. Токен извлекается из заголовка Authorization."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 123456,\n  \"name\": \"john_doe\",\n  \"created_at\": \"2024-03-25T10:30:00Z\"\n}"
+            }
+          ]
         },
         {
           "name": "Update User Name",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', () => {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -248,28 +169,23 @@
               "raw": "{\n  \"name\": \"new_username\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/users/me",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/users/me",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "users", "me"]
             },
             "description": "Обновить имя пользователя. Требует Bearer токен."
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 200,
+              "body": "{\n  \"id\": 123456,\n  \"name\": \"new_username\",\n  \"created_at\": \"2024-03-25T10:30:00Z\"\n}"
+            }
+          ]
         },
         {
           "name": "Change Password",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 204', () => {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -292,22 +208,49 @@
               "raw": "{\n  \"old_password\": \"securepass123\",\n  \"new_password\": \"newpass456\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/users/me/password",
-              "host": ["{{base_url}}"],
+              "raw": "http://user-service:8003/api/users/me/password",
+              "host": ["user-service"],
+              "port": "8003",
               "path": ["api", "users", "me", "password"]
             },
             "description": "Сменить пароль. Требует Bearer токен."
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "Проверка работоспособности",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://user-service:8003/health",
+              "host": ["user-service"],
+              "port": "8003",
+              "path": ["health"]
+            }
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "code": 200,
+              "body": "{\n  \"status\": \"healthy\",\n  \"service\": \"user-service\",\n  \"redis\": \"connected\"\n}"
+            }
+          ]
         }
       ]
     }
   ],
   "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8001",
-      "type": "string"
-    },
     {
       "key": "access_token",
       "value": "",
