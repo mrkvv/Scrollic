@@ -19,6 +19,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+          cpus: "0.5"
+        reservations:
+          memory: "128M"
+          cpus: "0.2"
 
 
   adminer:
@@ -47,6 +55,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+          cpus: "0.8"
+        reservations:
+          memory: "256M"
+          cpus: "0.1"
 
 
   cassandra:
@@ -76,9 +92,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: "3G"
+          cpus: "2.5"
         reservations:
-          memory: 1G
+          memory: "1G"
+          cpus: "0.5"
 
   cassandra-init:
     image: cassandra:5.0
@@ -152,6 +170,14 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: "2G"
+          cpus: "2"
+        reservations:
+          memory: "1G"
+          cpus: "1"
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
@@ -191,6 +217,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: "768M"
+          cpus: "0.5"
+        reservations:
+          memory: "384M"
+          cpus: "0.3"
 
 
   user-service:
@@ -225,6 +259,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+          cpus: "0.8"
+        reservations:
+          memory: "256M"
+          cpus: "0.2"
 
 
   news-fetcher-service:
@@ -242,6 +284,14 @@ services:
       GNEWS_APIKEY: ${GNEWS_APIKEY}
     networks:
       - scrollic-network
+    deploy:
+      resources:
+        limits:
+          memory: "768M"
+          cpus: "0.5"
+        reservations:
+          memory: "384M"
+          cpus: "0.3"
 
 
   news-handler-service:
@@ -269,6 +319,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: "768M"
+          cpus: "1"
+        reservations:
+          memory: "384M"
+          cpus: "0.4"
 
 
 volumes:
