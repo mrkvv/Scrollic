@@ -30,6 +30,31 @@
 - `enable.idempotence: true` - гарантия exactly-once доставки
 - Ключ сообщения - url новости
 
+## Структура проекта
+```
+NewsFetcherService/
+├── build.gradle.kts
+├── Dockerfile
+└── src/main/
+    ├── java/scrollic/news_fetcher_service/
+    │   ├── client/
+    │   │   ├── GNewsClient.java           # HTTP-клиент (WebClient + Retry)
+    │   │   └── exception/
+    │   │       └── GNewsException.java    # Кастомный Exception для обработки в Retry
+    │   ├── config/
+    │   │   └── KafkaConfig.java           # Только топик, конфиг producer'а через yaml
+    │   ├── dto/
+    │   │   ├── GNewsResponse.java         # DTO для ответа API
+    │   │   └── NewsArticle.java           # DTO для отправки новости в Kafka
+    │   ├── model/
+    │   │   └── GNewsCategory.java         # Enum: 8 возможных категорий в запросах к GNews
+    │   ├── services/
+    │   │   ├── KafkaProducerService.java  # Асинхронная отправка NewsArticle в Kafka
+    │   │   └── NewsFetcherService.java    # @Scheduled + дедупликация
+    │   └── NewsFetcherServiceApplication.java
+    └── resources/
+        └── application.yaml
+```
 
 ## Конфигурация (application.yaml)
 ```
