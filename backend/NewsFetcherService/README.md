@@ -57,7 +57,7 @@ NewsFetcherService/
 ```
 
 ## Конфигурация (application.yaml)
-```
+```yaml
 spring:
   kafka:
     topic:
