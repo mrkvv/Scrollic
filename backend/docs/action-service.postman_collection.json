@@ -45,7 +45,6 @@
           "response": [
             {
               "name": "Accepted",
-              "status": "Accepted",
               "code": 202,
               "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Пачка действий принята\",\n  \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"received\": 2,\n  \"processed\": 2\n}"
             }
@@ -85,7 +84,6 @@
           "response": [
             {
               "name": "Accepted",
-              "status": "Accepted",
               "code": 202,
               "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Лайк принят\",\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
             }
@@ -125,7 +123,6 @@
           "response": [
             {
               "name": "Accepted",
-              "status": "Accepted",
               "code": 202,
               "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Лайк удалён\",\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
             }
@@ -165,7 +162,6 @@
           "response": [
             {
               "name": "Accepted",
-              "status": "Accepted",
               "code": 202,
               "body": "{\n  \"status\": \"accepted\",\n  \"message\": \"Просмотр зафиксирован\",\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
             }
@@ -197,7 +193,6 @@
           "response": [
             {
               "name": "Success",
-              "status": "OK",
               "code": 200,
               "body": "{\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"liked\": true,\n  \"seen\": false\n}"
             }
@@ -223,7 +218,6 @@
           "response": [
             {
               "name": "Healthy",
-              "status": "OK",
               "code": 200,
               "body": "{\n  \"status\": \"healthy\",\n  \"cassandra\": \"up\",\n  \"redis\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00Z\"\n}"
             }
