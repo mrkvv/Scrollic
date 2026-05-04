@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "UserService API",
-    "description": "API для управления пользователями. Сервис сам генерирует JWT токены и управляет сессиями в Redis.",
+    "description": "API для управления пользователями. Токены генерируются UserService, но проверяются API Gateway. UserService ожидает заголовки X-User-Id и X-Username для защищённых эндпоинтов.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "version": "1.0.0"
   },
@@ -34,7 +34,7 @@
               "port": "8003",
               "path": ["api", "auth", "register"]
             },
-            "description": "Регистрация нового пользователя. Возвращает Bearer токен для дальнейших запросов."
+            "description": "Регистрация нового пользователя"
           },
           "response": [
             {
@@ -68,7 +68,7 @@
               "port": "8003",
               "path": ["api", "auth", "login"]
             },
-            "description": "Вход в аккаунт. Возвращает Bearer токен."
+            "description": "Вход в аккаунт"
           },
           "response": [
             {
@@ -99,7 +99,7 @@
               "port": "8003",
               "path": ["api", "auth", "logout"]
             },
-            "description": "Выход из аккаунта. Инвалидирует сессию в Redis."
+            "description": "Выход из аккаунта. Удаляет сессию из Redis по ключу session:{token}."
           },
           "response": [
             {
@@ -112,7 +112,7 @@
     },
     {
       "name": "Users",
-      "description": "Управление профилем пользователя",
+      "description": "Управление профилем пользователя (через API Gateway)",
       "item": [
         {
           "name": "Get Current User",
@@ -120,8 +120,13 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
+                "key": "X-User-Id",
+                "value": "123456",
+                "type": "text"
+              },
+              {
+                "key": "X-Username",
+                "value": "john_doe",
                 "type": "text"
               },
               {
@@ -135,7 +140,7 @@
               "port": "8003",
               "path": ["api", "users", "me"]
             },
-            "description": "Получить информацию о текущем пользователе. Токен извлекается из заголовка Authorization."
+            "description": "Получить информацию о текущем пользователе"
           },
           "response": [
             {
@@ -151,8 +156,13 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
+                "key": "X-User-Id",
+                "value": "123456",
+                "type": "text"
+              },
+              {
+                "key": "X-Username",
+                "value": "john_doe",
                 "type": "text"
               },
               {
@@ -174,7 +184,7 @@
               "port": "8003",
               "path": ["api", "users", "me"]
             },
-            "description": "Обновить имя пользователя. Требует Bearer токен."
+            "description": "Обновить имя пользователя"
           },
           "response": [
             {
@@ -190,8 +200,13 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}",
+                "key": "X-User-Id",
+                "value": "123456",
+                "type": "text"
+              },
+              {
+                "key": "X-Username",
+                "value": "john_doe",
                 "type": "text"
               },
               {
@@ -213,12 +228,47 @@
               "port": "8003",
               "path": ["api", "users", "me", "password"]
             },
-            "description": "Сменить пароль. Требует Bearer токен."
+            "description": "Сменить пароль"
           },
           "response": [
             {
               "name": "Success",
               "code": 204
+            }
+          ]
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://user-service:8003/api/users/me",
+              "host": ["user-service"],
+              "port": "8003",
+              "path": ["api", "users", "me"]
+            },
+            "description": "Удалить аккаунт пользователя"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "code": 204
+            },
+            {
+              "name": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"detail\": \"Invalid or expired token\"\n}"
             }
           ]
         }
@@ -237,7 +287,8 @@
               "host": ["user-service"],
               "port": "8003",
               "path": ["health"]
-            }
+            },
+            "description": "Проверка работы сервиса"
           },
           "response": [
             {
