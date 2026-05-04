@@ -44,13 +44,11 @@
           "response": [
             {
               "name": "Success",
-              "status": "OK",
               "code": 200,
               "body": "{\n  \"feed\": [\n    {\n      \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n      \"head\": \"Заголовок новости\",\n      \"sum\": \"Краткое описание\",\n      \"url\": \"https://example.com/news/1\",\n      \"url_picture\": \"https://example.com/image.jpg\",\n      \"theme_id\": 1,\n      \"popularity\": 1542,\n      \"created_at\": \"2024-03-25T10:30:00\"\n    }\n  ],\n  \"total\": 50,\n  \"limit\": 50\n}"
             },
             {
               "name": "Bad Request",
-              "status": "Bad Request",
               "code": 400,
               "body": "{\n  \"detail\": \"limit не может превышать 100\"\n}"
             }
@@ -76,7 +74,6 @@
           "response": [
             {
               "name": "Healthy",
-              "status": "OK",
               "code": 200,
               "body": "{\n  \"status\": \"healthy\",\n  \"cassandra\": \"up\",\n  \"timestamp\": \"2024-03-25T10:30:00Z\"\n}"
             }
