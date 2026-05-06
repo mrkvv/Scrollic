@@ -13,10 +13,6 @@ class Config:
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
 
-    # JWT
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-change-me-2024")
-    ALGORITHM: str = "HS256"
-
     # Service
     SERVICE_PORT: int = int(os.getenv("FEED_SERVICE_PORT", "8003"))
 

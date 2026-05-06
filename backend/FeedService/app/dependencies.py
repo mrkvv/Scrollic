@@ -1,17 +1,14 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Header, HTTPException, status
 import redis
 import logging
-from jose import JWTError, jwt
 from app.config import config
 
-security = HTTPBearer()
 logger = logging.getLogger(__name__)
 
 
 def get_redis() -> redis.Redis:
     """
-    Получение реального Redis клиента с проверкой подключения
+    Получение Redis клиента для кэширования
     """
     try:
         client = redis.Redis(
@@ -30,71 +27,14 @@ def get_redis() -> redis.Redis:
 
 
 async def get_current_user(
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        redis_client: redis.Redis = Depends(get_redis)
+        x_user_id: int = Header(..., alias="X-User-Id"),
+        x_username: str = Header(None, alias="X-Username")
 ) -> int:
-
-    token = credentials.credentials
-
-    try:
-        payload = jwt.decode(
-            token,
-            config.SECRET_KEY,
-            algorithms=[config.ALGORITHM]
-        )
-
-        user_id_str = payload.get("sub")
-        if user_id_str is None:
-            logger.warning(f"Token missing 'sub' claim")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: missing user id"
-            )
-
-        user_id = int(user_id_str)
-
-        if redis_client:
-            session_key = f"session:{token}"
-            session_data = redis_client.hgetall(session_key)
-
-            if not session_data:
-                logger.warning(f"No session found for token (user_id={user_id})")
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Session expired or not found"
-                )
-
-            session_user_id = session_data.get("user_id")
-            if session_user_id and int(session_user_id) != user_id:
-                logger.error(f"User ID mismatch: token={user_id}, session={session_user_id}")
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token and session mismatch"
-                )
-
-            logger.debug(f"Session validated for user {user_id}")
-        else:
-            logger.warning(f"Redis unavailable, skipping session check for user {user_id}")
-
-        return user_id
-
-    except JWTError as e:
-        logger.error(f"JWT validation error: {e}")
+    if not x_user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
+            detail="Missing X-User-Id header"
         )
-    except ValueError as e:
-        logger.error(f"Value error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid user id in token"
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error in get_current_user: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed"
-        )
+
+    logger.debug(f"User authenticated via Gateway: user_id={x_user_id}, username={x_username}")
+    return x_user_id
