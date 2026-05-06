@@ -1,6 +1,5 @@
 package scrollic.APIGateway.filters;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -18,8 +17,7 @@ import java.util.Map;
 @Component
 public class RateLimiterFilter implements GlobalFilter, Ordered {
 
-    @Autowired
-    private RedisRateLimiterService rateLimiterService;
+    private final RedisRateLimiterService rateLimiterService;
 
     private static final Map<String, Integer> LIMITS = Map.of(
             "register", 5,
@@ -28,6 +26,10 @@ public class RateLimiterFilter implements GlobalFilter, Ordered {
             "like", 200,
             "other", 100
     );
+
+    public RateLimiterFilter(RedisRateLimiterService rateLimiterService) {
+        this.rateLimiterService = rateLimiterService;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

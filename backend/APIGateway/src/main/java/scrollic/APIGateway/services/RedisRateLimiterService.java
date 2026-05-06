@@ -1,6 +1,5 @@
 package scrollic.APIGateway.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -11,11 +10,14 @@ import java.time.LocalDateTime;
 @Service
 public class RedisRateLimiterService {
 
-    @Autowired
-    private ReactiveRedisTemplate<String, String> redisTemplate;
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private static final String IP_PREFIX = "rateLimit:ip:";
     private static final String USER_PREFIX = "rateLimit:user:";
+
+    public RedisRateLimiterService(ReactiveRedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public Mono<Boolean> checkIpLimit(String action, String ip, int limit) {
         String key = IP_PREFIX + action + ":" + ip + ":" + getCurrentMinute();
