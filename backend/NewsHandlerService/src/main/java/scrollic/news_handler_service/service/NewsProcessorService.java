@@ -11,14 +11,8 @@ import scrollic.news_handler_service.entity.NewsEntity;
 import scrollic.news_handler_service.repository.NewsByDateRepository;
 import scrollic.news_handler_service.repository.NewsByThemeAndPopularityRepository;
 import scrollic.news_handler_service.repository.NewsRepository;
+import scrollic.news_handler_service.util.NewsUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -30,8 +24,6 @@ public class NewsProcessorService {
     private final NewsByDateRepository newsByDateRepository;
     private final NewsByThemeAndPopularityRepository newsByThemeAndPopularityRepository;
 
-    private static final DateTimeFormatter DATE_BUCKET_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public NewsProcessorService(
             NewsRepository newsRepository,
@@ -44,7 +36,7 @@ public class NewsProcessorService {
 
     public Mono<Void> processAndSave(NewsArticle article) {
 
-        UUID id = generateUuidFromUrl(article.getUrl());
+        UUID id = NewsUtils.generateUuidFromUrl(article.getUrl());
 
         return Mono.when(
                         saveToNewsTable(article, id),
@@ -106,10 +98,7 @@ public class NewsProcessorService {
     private NewsByDateEntity mapToNewsByDateEntity(NewsArticle article, UUID id) {
         NewsByDateEntity entity = new NewsByDateEntity();
 
-        Instant dateBucket = article.getPublishedAt()
-                .plus(7, java.time.temporal.ChronoUnit.DAYS);
-
-        entity.setDateBucket(formatDateBucket(dateBucket));
+        entity.setDateBucket(NewsUtils.getDateBucket(article.getPublishedAt()));
         entity.setCreatedAt(article.getPublishedAt());
         entity.setId(id);
 
@@ -137,21 +126,5 @@ public class NewsProcessorService {
         entity.setUrl(article.getUrl());
         entity.setUrlPicture(article.getImage());
         return entity;
-    }
-
-    private UUID generateUuidFromUrl(String url) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(url.getBytes(StandardCharsets.UTF_8));
-            return UUID.nameUUIDFromBytes(digest);
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.warn("MD5 не доступен, был использован случайный UUID");
-            return UUID.randomUUID();
-        }
-    }
-
-    private String formatDateBucket(Instant instant) {
-        return LocalDate.ofInstant(instant, ZoneOffset.UTC)
-                .format(DATE_BUCKET_FORMATTER);
     }
 }
