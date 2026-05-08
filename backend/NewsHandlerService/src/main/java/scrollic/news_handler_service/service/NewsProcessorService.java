@@ -24,24 +24,28 @@ public class NewsProcessorService {
     private final NewsByDateRepository newsByDateRepository;
     private final NewsByThemeAndPopularityRepository newsByThemeAndPopularityRepository;
 
+    private final NewsTaggerService newsTaggerService;
 
     public NewsProcessorService(
             NewsRepository newsRepository,
             NewsByDateRepository newsByDateRepository,
-            NewsByThemeAndPopularityRepository newsByThemeAndPopularityRepository) {
+            NewsByThemeAndPopularityRepository newsByThemeAndPopularityRepository,
+            NewsTaggerService newsTaggerService) {
         this.newsRepository = newsRepository;
         this.newsByDateRepository = newsByDateRepository;
         this.newsByThemeAndPopularityRepository = newsByThemeAndPopularityRepository;
+        this.newsTaggerService = newsTaggerService;
     }
 
     public Mono<Void> processAndSave(NewsArticle article) {
 
         UUID id = NewsUtils.generateUuidFromUrl(article.getUrl());
+        int themeId = newsTaggerService.tagNews(article);
 
         return Mono.when(
-                        saveToNewsTable(article, id),
-                        saveToNewsByDateTable(article, id),
-                        saveToNewsByThemeAndPopularityTable(article, id)
+                        saveToNewsTable(article, id, themeId),
+                        saveToNewsByDateTable(article, id, themeId),
+                        saveToNewsByThemeAndPopularityTable(article, id, themeId)
                 )
                 .doOnSuccess(v ->
                         LOGGER.info("Новость id = {} сохранена во все таблицы Cassandra", id))
@@ -50,16 +54,17 @@ public class NewsProcessorService {
                                 id, error.getMessage()));
     }
 
-    private Mono<NewsEntity> saveToNewsTable(NewsArticle article, UUID id) {
-        return Mono.fromCallable(() -> mapToNewsEntity(article, id))
+    private Mono<NewsEntity> saveToNewsTable(NewsArticle article, UUID id, int themeId) {
+        return Mono.fromCallable(() -> mapToNewsEntity(article, id, themeId))
                 .flatMap(newsRepository::save)
                 .doOnSuccess(entity -> LOGGER.info("Сохранено в news, id = {}", id))
                 .doOnError(error ->
                         LOGGER.error("Ошибка при сохранении в news: {}", error.getMessage()));
     }
 
-    private Mono<NewsByDateEntity> saveToNewsByDateTable(NewsArticle article, UUID id) {
-        return Mono.fromCallable(() -> mapToNewsByDateEntity(article, id))
+    private Mono<NewsByDateEntity> saveToNewsByDateTable(
+            NewsArticle article, UUID id, int themeId) {
+        return Mono.fromCallable(() -> mapToNewsByDateEntity(article, id, themeId))
                 .flatMap(newsByDateRepository::save)
                 .doOnSuccess(entity ->
                         LOGGER.info("Сохранено в news_by_date, id = {}", id))
@@ -68,8 +73,8 @@ public class NewsProcessorService {
     }
 
     private Mono<NewsByThemeAndPopularityEntity> saveToNewsByThemeAndPopularityTable
-            (NewsArticle article, UUID id) {
-        return Mono.fromCallable(() -> mapToNewsByThemeAndPopularityEntity(article, id))
+            (NewsArticle article, UUID id, int themeId) {
+        return Mono.fromCallable(() -> mapToNewsByThemeAndPopularityEntity(article, id, themeId))
                 .flatMap(newsByThemeAndPopularityRepository::save)
                 .doOnSuccess(entity ->
                         LOGGER.info("Сохранено в news_by_theme_and_popularity, id = {}", id))
@@ -77,7 +82,7 @@ public class NewsProcessorService {
                         LOGGER.error("Ошибка при сохранении в news_by_theme_and_popularity: {}", error.getMessage()));
     }
 
-    private NewsEntity mapToNewsEntity(NewsArticle article, UUID id) {
+    private NewsEntity mapToNewsEntity(NewsArticle article, UUID id, int themeId) {
         NewsEntity entity = new NewsEntity();
 
         entity.setId(id);
@@ -90,19 +95,21 @@ public class NewsProcessorService {
         entity.setCreatedAt(article.getPublishedAt());
 
         entity.setPopularity(0);
-        entity.setThemeId(-1);
+        entity.setThemeId(themeId);
 
         return entity;
     }
 
-    private NewsByDateEntity mapToNewsByDateEntity(NewsArticle article, UUID id) {
+    private NewsByDateEntity mapToNewsByDateEntity(
+            NewsArticle article, UUID id, int themeId) {
+
         NewsByDateEntity entity = new NewsByDateEntity();
 
         entity.setDateBucket(NewsUtils.getDateBucket(article.getPublishedAt()));
         entity.setCreatedAt(article.getPublishedAt());
         entity.setId(id);
 
-        entity.setThemeId(-1);
+        entity.setThemeId(themeId);
         entity.setPopularity(0);
 
         entity.setHead(article.getTitle());
@@ -112,10 +119,11 @@ public class NewsProcessorService {
     }
 
     private NewsByThemeAndPopularityEntity mapToNewsByThemeAndPopularityEntity(
-            NewsArticle article, UUID id) {
+            NewsArticle article, UUID id, int themeId) {
+
         NewsByThemeAndPopularityEntity entity = new NewsByThemeAndPopularityEntity();
 
-        entity.setThemeId(-1);
+        entity.setThemeId(themeId);
         entity.setPopularity(0);
 
         entity.setCreatedAt(article.getPublishedAt());
