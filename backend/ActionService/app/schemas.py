@@ -42,3 +42,15 @@ class HealthResponse(BaseModel):
     cassandra: str
     redis: str
     timestamp: datetime
+
+
+class LikeRequest(BaseModel):
+    news_id: UUID
+
+
+class SeenRequest(BaseModel):
+    news_id: UUID
+
+
+class UnlikeRequest(BaseModel):
+    news_id: UUID

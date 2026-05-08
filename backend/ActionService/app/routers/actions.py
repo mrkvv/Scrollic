@@ -6,7 +6,7 @@ from uuid import UUID
 from datetime import datetime
 from app.schemas import (
     BatchActions, BatchResponse, ActionResponse,
-    ActionStatusResponse
+    ActionStatusResponse, LikeRequest, SeenRequest, UnlikeRequest
 )
 from app.dependencies import get_current_user, get_redis
 from app.database import get_cassandra
@@ -28,13 +28,15 @@ async def recalculate_user_weights_async(user_id: int, cassandra_session):
 
 @router.post("/like", response_model=ActionResponse)
 async def like_news(
-        news_id: UUID,
+        request: LikeRequest,
         user_id: int = Depends(get_current_user),
         cassandra_session=Depends(get_cassandra),
         redis_client=Depends(get_redis)
 ):
     """Поставить лайк - запись в Cassandra и инвалидация кэша"""
     try:
+        news_id = request.news_id
+
         if not cassandra_session:
             logger.warning("Cassandra not available, using mock")
             return ActionResponse(
@@ -74,13 +76,15 @@ async def like_news(
 
 @router.delete("/like", response_model=ActionResponse)
 async def unlike_news(
-        news_id: UUID,
+        request: UnlikeRequest,
         user_id: int = Depends(get_current_user),
         cassandra_session=Depends(get_cassandra),
         redis_client=Depends(get_redis)
 ):
     """Удалить лайк"""
     try:
+        news_id = request.news_id
+
         if not cassandra_session:
             logger.warning("Cassandra not available, using mock")
             return ActionResponse(
@@ -117,13 +121,15 @@ async def unlike_news(
 
 @router.post("/seen", response_model=ActionResponse)
 async def mark_as_seen(
-        news_id: UUID,
+        request: SeenRequest,
         user_id: int = Depends(get_current_user),
         cassandra_session=Depends(get_cassandra),
         redis_client=Depends(get_redis)
 ):
     """Отметить новость как просмотренную"""
     try:
+        news_id = request.news_id
+
         if not cassandra_session:
             logger.warning("Cassandra not available, using mock")
             return ActionResponse(

@@ -29,28 +29,29 @@ async def periodic_weight_recalculation():
                 # Получаем активных пользователей (у которых были действия за последние 24 часа)
                 hours_ago = datetime.now() - timedelta(hours=24)
 
-                # Получаем пользователей из лайков с ALLOW FILTERING
+                # Исправленный запрос - без DISTINCT с WHERE
+                # Получаем пользователей из лайков
                 likes_query = """
-                    SELECT DISTINCT user_id FROM user_likes 
-                    WHERE liked_at >= %s
+                    SELECT user_id, liked_at FROM user_likes 
                     ALLOW FILTERING
                 """
-                active_from_likes = cassandra_session.execute(likes_query, (hours_ago,))
+                active_from_likes = cassandra_session.execute(likes_query)
 
-                # Получаем пользователей из просмотров с ALLOW FILTERING
+                # Получаем пользователей из просмотров
                 seen_query = """
-                    SELECT DISTINCT user_id FROM user_seen 
-                    WHERE seen_at >= %s
+                    SELECT user_id, seen_at FROM user_seen 
                     ALLOW FILTERING
                 """
-                active_from_seen = cassandra_session.execute(seen_query, (hours_ago,))
+                active_from_seen = cassandra_session.execute(seen_query)
 
-                # Объединяем уникальных пользователей
+                # Объединяем уникальных пользователей с активностью за последние 24 часа
                 users = set()
                 for row in active_from_likes:
-                    users.add(row['user_id'])
+                    if row['liked_at'] >= hours_ago:
+                        users.add(row['user_id'])
                 for row in active_from_seen:
-                    users.add(row['user_id'])
+                    if row['seen_at'] >= hours_ago:
+                        users.add(row['user_id'])
 
                 logger.info(f"Found {len(users)} active users for weight update")
 
@@ -71,6 +72,7 @@ async def periodic_weight_recalculation():
             logger.error(f"Error in periodic weight recalculation: {e}")
             await asyncio.sleep(60)  # При ошибке ждем 1 минуту
 
+            
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
