@@ -1,11 +1,10 @@
 {
   "info": {
-    "_postman_id": "58337230-7f90-48c0-8da9-a3c2a5411185",
+    "_postman_id": "7f6e7578-1867-488f-a0de-bb0d0ffa2768",
     "name": "APIGateway Documentation",
-    "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic\n\n## Общая информация:\n\n- Если приходит слишком много запросов от конкретного пользователя/ip, то в любом случае выбрасывается 429 Too Many Requests с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"Too many requests. Limit: <limit> per minute\"\n}\n\n ```\n\n- В каждый запрос (\\*почти) добавляется заголовок Authorization с Bearer Token'ом пользователя. Под капотом APIGateway: сверяется Bearer token и, если все хорошо, то в UserService пробрасываются заголовки \"X-User-Id\" и \"X-Username\", без токена. Тот уже в свою очередь делает то, что делает.\n    \n- Если пользователь не прошел по Bearer Token'у, то выбрасывается 401 Unauthorized с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"<message>\"\n}\n\n ```\n\n- На Bearer Token не проверяются только регистрация, логин и logout.",
+    "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic\n\n## Общая информация:\n\n- Если приходит слишком много запросов от конкретного пользователя/ip, то в любом случае выбрасывается 429 Too Many Requests с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"Too many requests. Limit: <limit> per minute\"\n}\n\n ```\n\n- В каждый запрос (\\*почти) добавляется заголовок Authorization с Bearer Token'ом пользователя. Под капотом APIGateway: сверяется Bearer token и, если все хорошо, то в сервисы пробрасываются заголовки \"X-User-Id\" и \"X-Username\", без токена. Те уже в свою очередь, делают то, что делают.\n    \n- Если пользователь не прошел по Bearer Token'у, то выбрасывается 401 Unauthorized с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"<message>\"\n}\n\n ```\n\n- На Bearer Token не проверяются только регистрация, логин, logout и удаление аккаунта.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "53202645",
-    "_collection_link": "https://go.postman.co/collection/53202645-58337230-7f90-48c0-8da9-a3c2a5411185?source=collection_link"
+    "_exporter_id": "53202645"
   },
   "item": [
     {
@@ -37,14 +36,18 @@
               }
             },
             "url": {
-              "raw": "/api/auth/register",
+              "raw": "localhost:8080/api/auth/register",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "auth",
                 "register"
               ]
             },
-            "description": "### Регистрация нового пользователя в базе данных (PostgreSQL).\n\nПринимаем запрос, проводим проверку на rate limit, если все ок, пробрасываем в UserService. Тот в свою очередь обрабатывает заявку и возвращает ответ.  \nВозможные статусы ответов:\n\n- 201 Created\n    \n- 409 Conflict\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять с любым запросом."
+            "description": "### Регистрация нового пользователя в базе данных (PostgreSQL).\n\nОтправляется один раз при регистрации нового пользователя.\n\nПод капотом: принимаем запрос, проводим проверку на rate limit, если все ок, пробрасываем в UserService. Тот в свою очередь обрабатывает заявку и возвращает ответ.  \nВозможные статусы ответов:\n\n- 201 Created\n    \n- 400 Bad Request\n    \n- 422 Unprocessable Entity\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять вместе с (почти) любым запросом. Информация нужно ли его отправлять вместе с запросом или нет - есть в разделе Authorization у каждого запроса (если пусто - не нужно)."
           },
           "response": [
             {
@@ -73,7 +76,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/auth/register",
+                  "raw": "localhost:8080/api/auth/register",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "auth",
@@ -93,7 +100,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\r\n  \"token_type\": \"bearer\",\r\n  \"expires_in\": 3600,\r\n  \"user\": {\r\n    \"id\": 1,\r\n    \"name\": \"mrkv\",\r\n    \"created_at\": \"2026-04-15T23:06:00\"\r\n  }\r\n}"
+              "body": "{\r\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIyNzAxfQ.xWLo6z8-cZxgCckkSH1Hnk0tpjFoZRp5bEPhton5-0A\",\r\n    \"token_type\": \"bearer\",\r\n    \"expires_in\": 3600,\r\n    \"user\": {\r\n        \"id\": 1,\r\n        \"name\": \"mrkv\",\r\n        \"created_at\": \"2026-05-09T09:31:41.265238\"\r\n    }\r\n}"
             },
             {
               "name": "Username занят",
@@ -121,7 +128,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/auth/register",
+                  "raw": "localhost:8080/api/auth/register",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "auth",
@@ -129,8 +140,8 @@
                   ]
                 }
               },
-              "status": "Conflict",
-              "code": 409,
+              "status": "Bad Request",
+              "code": 400,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -141,7 +152,59 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"User with name mrkv already exists\"\r\n}"
+              "body": "{\r\n    \"detail\": \"Username already registered\"\r\n}"
+            },
+            {
+              "name": "Нет каких-либо параметров в теле",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"mrkv\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/auth/register",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"detail\": [\n        {\n            \"type\": \"missing\",\n            \"loc\": [\n                \"body\",\n                \"password\"\n            ],\n            \"msg\": \"Field required\",\n            \"input\": {\n                \"name\": \"mrkv\"\n            }\n        }\n    ]\n}"
             }
           ]
         },
@@ -171,14 +234,18 @@
               }
             },
             "url": {
-              "raw": "/api/auth/login",
+              "raw": "localhost:8080/api/auth/login",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "auth",
                 "login"
               ]
             },
-            "description": "### Запрос на вход в аккаунт\n\nКлиент ввел свои данные (логин, пароль), запрос пробрасывается в UserService, в котором далее и обрабатывается. Если с данными все ок, то возвращает токен, а если чтото не так, то получай 401....  \nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять с любым запросом."
+            "description": "### Запрос на вход в аккаунт\n\nКлиент ввел свои данные (логин, пароль), запрос пробрасывается в UserService, в котором далее и обрабатывается. Если с данными все ок, то возвращает токен, а если чтото не так, то получай 401....  \nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity\n    \n\nInfo (mobile): Полученный в ответе bearer token нужно сохранять локально на мобилке и в дальнейшем отправлять с (почти) любым запросом. Информация нужно ли его отправлять вместе с запросом или нет - есть в разделе Authorization у каждого запроса (если пусто - не нужно)."
           },
           "response": [
             {
@@ -207,7 +274,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/auth/login",
+                  "raw": "localhost:8080/api/auth/login",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "auth",
@@ -233,10 +304,10 @@
                   "path": ""
                 }
               ],
-              "body": "{\r\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\r\n  \"token_type\": \"bearer\",\r\n  \"expires_in\": 3600,\r\n  \"user\": {\r\n    \"id\": 1,\r\n    \"name\": \"mrkv\",\r\n    \"created_at\": \"2026-04-15T23:07:00\"\r\n  }\r\n}"
+              "body": "{\r\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc\",\r\n    \"token_type\": \"bearer\",\r\n    \"expires_in\": 3600,\r\n    \"user\": {\r\n        \"id\": 1,\r\n        \"name\": \"mrkv\",\r\n        \"created_at\": \"2026-05-09T09:31:41.265238\"\r\n    }\r\n}"
             },
             {
-              "name": "Пользователя нет",
+              "name": "Неверные пароль или имя",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -261,7 +332,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/auth/login",
+                  "raw": "localhost:8080/api/auth/login",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "auth",
@@ -281,7 +356,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Invalid username or password\"\r\n}"
+              "body": "{\r\n    \"detail\": \"Invalid username or password\"\r\n}"
             }
           ]
         },
@@ -293,7 +368,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiam9obl9kb2UiLCJpYXQiOjE3MTA5MzI2MDAsImV4cCI6MTcxMTAxOTAwMH0.signature",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
                   "type": "string"
                 }
               ]
@@ -316,16 +391,73 @@
               }
             },
             "url": {
-              "raw": "/api/auth/logout",
+              "raw": "localhost:8080/api/auth/logout",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "auth",
                 "logout"
               ]
             },
-            "description": "### Удаление токена (выход)\n\nВ заголовок Authorization запроса передается Bearer token. APIGateway передает его в UserService, который удаляет сессию.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized"
+            "description": "### Удаление токена (выход)\n\nВ заголовок Authorization запроса передается Bearer token. APIGateway передает его в UserService, который удаляет сессию.\n\nВозможные статусы ответов:\n\n- 204 No Content\n    \n- 403 Forbidden (если оставить пустой BearerToken)"
           },
-          "response": []
+          "response": [
+            {
+              "name": "Успешный выход",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/auth/logout",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": ""
+            }
+          ]
         },
         {
           "name": "Запрос информации о пользователе",
@@ -349,7 +481,11 @@
               }
             ],
             "url": {
-              "raw": "/api/users/me",
+              "raw": "localhost:8080/api/users/me",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "users",
@@ -363,12 +499,22 @@
               "name": "Пользователь существует",
               "originalRequest": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
-                  "raw": "/api/auth/me",
+                  "raw": "localhost:8080/api/users/me",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
-                    "auth",
+                    "users",
                     "me"
                   ]
                 }
@@ -385,7 +531,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n  \"id\": 1,\r\n  \"name\": \"john_doe\",\r\n  \"created_at\": \"2024-01-15T10:30:00\"\r\n}"
+              "body": "{\r\n    \"id\": 1,\r\n    \"name\": \"mrkv\",\r\n    \"created_at\": \"2026-05-09T09:31:41.265238\"\r\n}"
             }
           ]
         },
@@ -397,7 +543,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
                   "type": "string"
                 }
               ]
@@ -425,14 +571,18 @@
               }
             },
             "url": {
-              "raw": "/api/users/me",
+              "raw": "localhost:8080/api/users/me",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "users",
                 "me"
               ]
             },
-            "description": "Сменить имя пользователя. Так же принимает Bearer Token в заголовке Authorization.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized"
+            "description": "### Сменить имя пользователя\n\nТак же принимает Bearer Token в заголовке Authorization.\n\nВозможные статусы ответа:\n\n- 200 OK\n    \n- 401 Unauthorized"
           },
           "response": [
             {
@@ -449,6 +599,11 @@
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
@@ -461,7 +616,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/users/me",
+                  "raw": "localhost:8080/api/users/me",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "users",
@@ -471,10 +630,17 @@
               },
               "status": "OK",
               "code": 200,
-              "_postman_previewlanguage": null,
-              "header": null,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
               "cookie": [],
-              "body": "{\r\n  \"id\": 1,\r\n  \"name\": \"new_username\",\r\n  \"created_at\": \"2024-01-15T10:30:00\"\r\n}"
+              "body": "{\n    \"id\": 1,\n    \"name\": \"new_username\",\n    \"created_at\": \"2026-05-09T09:31:41.265238\"\n}"
             }
           ]
         },
@@ -486,7 +652,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
                   "type": "string"
                 }
               ]
@@ -506,7 +672,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"old_password\": \"securepass123\",\r\n  \"new_password\": \"newpass456\"\r\n}",
+              "raw": "{\r\n  \"old_password\": \"mrkv_password_123\",\r\n  \"new_password\": \"new_mrkv_password_123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -514,7 +680,11 @@
               }
             },
             "url": {
-              "raw": "/api/users/me/password",
+              "raw": "localhost:8080/api/users/me/password",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "users",
@@ -539,11 +709,16 @@
                     "key": "Accept",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n  \"old_password\": \"securepass123\",\r\n  \"new_password\": \"newpass456\"\r\n}",
+                  "raw": "{\r\n  \"old_password\": \"mrkv_password_123\",\r\n  \"new_password\": \"new_mrkv_password_123\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -551,7 +726,11 @@
                   }
                 },
                 "url": {
-                  "raw": "/api/users/me/password",
+                  "raw": "localhost:8080/api/users/me/password",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "users",
@@ -562,10 +741,127 @@
               },
               "status": "No Content",
               "code": 204,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Удалить аккаунт",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "localhost:8080/api/users/me",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            },
+            "description": "### Удалить аккаунт\n\nПринимает Bearer токен."
+          },
+          "response": [
+            {
+              "name": "Аккаунт удален",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "localhost:8080/api/users/me",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
               "_postman_previewlanguage": null,
               "header": null,
               "cookie": [],
               "body": null
+            },
+            {
+              "name": "Если токен не актуален",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "localhost:8080/api/users/me",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Invalid or expired token\"\n}"
             }
           ]
         }
@@ -597,19 +893,23 @@
               }
             ],
             "url": {
-              "raw": "/api/feed?amount={news_amount}",
+              "raw": "localhost:8080/api/feed?limit={{amount}}",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "feed"
               ],
               "query": [
                 {
-                  "key": "amount",
-                  "value": "{news_amount}"
+                  "key": "limit",
+                  "value": "{{amount}}"
                 }
               ]
             },
-            "description": "### Получить пачку новостей\n\nУказывается как query-параметр сколько новостей нужно отослать (в дальнейшем n). По дефолту возвращает 20 новостей  \nЗа кулисами: переадресация запроса в FeedService. Тот ищет веса этого пользователя из Cassandra таблицы \"user_weights\", берет веса и на их основе вытаскивает из таблицы \"тег-новость\" n новостей, отправляет их обратно, мы получаем и возвращаем клиенту. Так же стоит проверять на просмотренные новости, чтобы второй раз они пользователю не попадались (желательно).\n\n_P.S.: вроде бы ситуации с отсутствием весов быть не может, поэтому не рассматривал этот случай ниже._\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 400 Bad Request (значение параметра меньше 1 или больше 100)\n    \n- 401 Unauthorized (если токен не прошел)\n    \n- 429 Too Many Requests"
+            "description": "### Получить пачку новостей\n\nВ query-параметр указывается, сколько новостей нужно отослать. Принимает Bearer Token.  \nПод капотом: проверка на rate limit, аутентификация, и если все хорошо, то переадресация запроса в FeedService. Тот берет веса этого пользователя из Cassandra таблицы \"user_theme_weights\" и на их основе собирает из таблицы \"news_by_theme_and_popularity\" указанное количество новостей.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized (если токен не прошел)\n    \n- 422 Unprocessable Entity (если что-то не так с параметром)\n    \n- 429 Too Many Requests"
           },
           "response": [
             {
@@ -621,18 +921,27 @@
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
                 "url": {
-                  "raw": "/api/feed?amount=2",
+                  "raw": "localhost:8080/api/feed?limit=50",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "feed"
                   ],
                   "query": [
                     {
-                      "key": "amount",
-                      "value": "2"
+                      "key": "limit",
+                      "value": "50"
                     }
                   ]
                 }
@@ -655,7 +964,7 @@
                   "path": ""
                 }
               ],
-              "body": "{\r\n    \"status\": \"success\",\r\n    \"news\": [\r\n        {\r\n            \"id\": \"10\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"100\",\r\n            \"theme_id\": \"3\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {\r\n            \"id\": \"14\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"30\",\r\n            \"theme_id\": \"4\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        }\r\n    ]\r\n}"
+              "body": "{\r\n    \"feed\": [\r\n        {\r\n            \"id\": \"d8d3f51c-8809-3155-8bce-4f88f103f881\",\r\n            \"head\": \"Возможное влияние интервального голодания на течение болезни Альцгеймера изучили исследователи\",\r\n            \"summary\": \"Интервальное голодание может быть связано с замедлением процессов нейродегенерации при болезни Альцгеймера — к такому выводу пришли исследователи, изучившие метаболические и клеточные механизмы этого подхода.\",\r\n            \"text\": \"Интервальное голодание может быть связано с замедлением процессов нейродегенерации при болезни Альцгеймера — к такому выводу пришли исследователи, изучившие метаболические и клеточные механизмы этого подхода. Об этом сообщает Frontiers in Nutrition.\\n... [1039 chars]\",\r\n            \"url\": \"https://www.gismeteo.ru/news/health/vozmozhnoe-vliyanie-intervalnogo-golodaniya-na-techenie-bolezni-alcgejmera-izuchili-issledovateli/\",\r\n            \"url_picture\": \"https://news-img.gismeteo.st/ru/2026/05/shutterstock_2005068278.jpg\",\r\n            \"popularity\": 0,\r\n            \"theme_id\": 1,\r\n            \"created_at\": \"2026-05-08T20:31:00\"\r\n        },\r\n        {\r\n            \"id\": \"7071209c-455e-33fa-9ca8-1ddaa0a45876\",\r\n            \"head\": \"Тренер \\\"Родины\\\" Диас почувствовал много эмоций от выхода клуба в РПЛ\",\r\n            \"summary\": \"«Родина» впервые вышла в РПЛ.\",\r\n            \"text\": \"ОлбаниФутболПремьер-лигаПервая лигаКубок РоссииЧемпионат мираСборныеЗарубежныйЕврокубкиХоккейКХЛНХЛММАБоксТеннисЛыжный спортФормула-1Фигурное катаниеДругиеСпортивные видеоАвто/мотоВолейболВодныеШахматы, шашкиФитнесТовары для спортаОлимпизмБеларусьКаз... [4138 chars]\",\r\n            \"url\": \"https://sportmail.ru/news/football-rus-first/70828618/\",\r\n            \"url_picture\": \"https://resizer.mail.ru/p/2536bd23-cae6-583e-8f5e-74b70889a5e5/AQAG0XxdRPABlQEyb4epbkRQktuYDofYj1G3WBv9SET6Quz58a7tvkVtcywGKHuTmTdCyysOOkaB70OeW0o8ZZ7K9tg.jpg\",\r\n            \"popularity\": 0,\r\n            \"theme_id\": 1,\r\n            \"created_at\": \"2026-05-08T20:44:56\"\r\n        },\r\n        { } ...\r\n    ],\r\n    \"total\": 26,\r\n    \"limit\": 50\r\n}"
             },
             {
               "name": "Неверный параметр",
@@ -666,24 +975,33 @@
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
                 "url": {
-                  "raw": "/api/feed?amount=-3",
+                  "raw": "localhost:8080/api/feed?limit=-3",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "feed"
                   ],
                   "query": [
                     {
-                      "key": "amount",
+                      "key": "limit",
                       "value": "-3"
                     }
                   ]
                 }
               },
-              "status": "Bad Request",
-              "code": 400,
+              "status": "Unprocessable Entity",
+              "code": 422,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -694,10 +1012,10 @@
                 }
               ],
               "cookie": [],
-              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Invalid amount parameter. Please provide a positive integer.\"\r\n}"
+              "body": "{\r\n    \"detail\": [\r\n        {\r\n            \"type\": \"greater_than_equal\",\r\n            \"loc\": [\r\n                \"query\",\r\n                \"limit\"\r\n            ],\r\n            \"msg\": \"Input should be greater than or equal to 1\",\r\n            \"input\": \"-3\",\r\n            \"ctx\": {\r\n                \"ge\": 1\r\n            },\r\n            \"url\": \"https://errors.pydantic.dev/2.5/v/greater_than_equal\"\r\n        }\r\n    ]\r\n}"
             },
             {
-              "name": "Неверный токен",
+              "name": "Если неверный токен",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -705,18 +1023,27 @@
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
                 "url": {
-                  "raw": "/api/feed?amount=10",
+                  "raw": "localhost:8080/api/feed?limit=50",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "feed"
                   ],
                   "query": [
                     {
-                      "key": "amount",
-                      "value": "10"
+                      "key": "limit",
+                      "value": "50"
                     }
                   ]
                 }
@@ -747,13 +1074,20 @@
       "description": "Все запросы, связанные с лентой. Все будет переадресовано в FeedService"
     },
     {
-      "name": "Actions",
+      "name": "Actions Interactions",
       "item": [
         {
-          "name": "Лайк",
+          "name": "Отправка пачки действий пользователя",
           "request": {
             "auth": {
-              "type": "bearer"
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
             },
             "method": "POST",
             "header": [
@@ -761,185 +1095,77 @@
                 "key": "Content-Type",
                 "value": "application/json",
                 "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\r\n  \"client_timestamp\": 1700000000000,\r\n  \"actions\": [\r\n    {\r\n      \"action_id\": \"action-uuid-1\",\r\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n      \"action\": \"like\",\r\n      \"timestamp\": 1700000000000\r\n    },\r\n    {\r\n      \"action_id\": \"action-uuid-2\",\r\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174001\",\r\n      \"action\": \"seen\",\r\n      \"timestamp\": 1700000001000\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "/api/actions/like/{news_id}",
+              "raw": "localhost:8080/api/actions/batch",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
               "path": [
                 "api",
                 "actions",
-                "like",
-                "{news_id}"
+                "batch"
               ]
             },
-            "description": "### Запрос на выставление лайка новости\n\nАсинхронный запрос. Из токена получаем пользователя, из url получаем id новости, которую этот пользователь лайкнул.\n\nAPIGateway сначала должен проверить в Redis, существует ли такой токен, если да, то он отправляет запрос в ActionService, сразу вернув клиенту 202. Если токена нет в Redis, то 401.\n\nПод капотом у ActionService имеется в виду следующее: мы не сразу идем в Cassandra и добавляем туда этот один лайк, а пока сохраняем его в Redis. Как только в Redis набирается определенное количество лайков (пусть 100 и они от всех пользователей) мы идем и пачкой вносим их в Cassandra. Возможно рассмотреть использование какого-нибудь брокера сообщений.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests (выставлю там значение побольше. Выпадет только если произойдет какая-то ботоводческая активность, или тип будет баловаться туда сюда очень много раз жмать лайк)"
+            "description": "### Отправка пачки действий пользователя\n\nНеобходимо на мобайле собирать все действия пользователя в пачки и периодически отправлять их в этот запрос (периодичность нужно будет обговорить).\n\nПринимает Bearer Token.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если что-то по структуре тела не так)\n    \n- 429 Too Many Requests"
           },
           "response": [
             {
-              "name": "Успешный лайк",
+              "name": "Отправка пачки действий пользователя",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "/api/actions/like/10",
-                  "path": [
-                    "api",
-                    "actions",
-                    "like",
-                    "10"
-                  ]
-                }
-              },
-              "status": "Accepted",
-              "code": 202,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json",
-                  "description": "",
-                  "type": "text"
-                }
-              ],
-              "cookie": [],
-              "body": "{\r\n    \"status\": \"success\"\r\n}"
-            },
-            {
-              "name": "Ошибка аутентификации",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "/api/actions/like/10",
-                  "path": [
-                    "api",
-                    "actions",
-                    "like",
-                    "10"
-                  ]
-                }
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json",
-                  "description": "",
-                  "type": "text"
-                }
-              ],
-              "cookie": [],
-              "body": "{\r\n    \"status\": \"error\",\r\n    \"message\": \"Authorization invalid. Please provide a valid token.\"\r\n}"
-            }
-          ]
-        },
-        {
-          "name": "Снятие лайка",
-          "request": {
-            "auth": {
-              "type": "bearer"
-            },
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "/api/actions/like/{news_id}",
-              "path": [
-                "api",
-                "actions",
-                "like",
-                "{news_id}"
-              ]
-            },
-            "description": "### Снятие лайка\n\nАсинхронная операция. В пути url'а указываем id новости, с которой мы убрали лайк.\n\nОтличается от выставления лайка только HTTP методом. Под капотом отдает это ActionService, который в свою очередь сносит запись этого лайка в Redis и проверяет, как бы в Cassandra его не было, при необходимости и его сносит.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests (выставлю там значение побольше. Выпадет только если произойдет какая-то ботоводческая активность, или тип будет баловаться туда сюда очень много раз жмать лайк)"
-          },
-          "response": []
-        },
-        {
-          "name": "Просмотрено",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "/api/actions/view/{news_id}",
-              "path": [
-                "api",
-                "actions",
-                "view",
-                "{news_id}"
-              ]
-            },
-            "description": "### Пометить новость как просмотренную у этого пользователя.\n\nМеханика аналогичная с лайком - тоже сначала копим в Redis и пачкой вносим в Cassandra.\n\nВозможные статусы ответов:\n\n- 202 Accepted\n    \n- 400 Bad Request (если новости с такой id нет)\n    \n- 401 Unauthorized"
-          },
-          "response": []
-        },
-        {
-          "name": "Получить лайки",
-          "request": {
-            "auth": {
-              "type": "bearer"
-            },
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "/api/actions/likes",
-              "path": [
-                "api",
-                "actions",
-                "likes"
-              ]
-            },
-            "description": "### Получить список лайкнутых новостей пользователя\n\nПользователя вытаскиваем из токена. Если такого нет, то незамедлительно скидываем 401, если есть, то переадресуем в ActionService.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 429 Too Many Requests"
-          },
-          "response": [
-            {
-              "name": "Успешно",
-              "originalRequest": {
-                "method": "GET",
                 "header": [
                   {
                     "key": "Content-Type",
                     "value": "application/json",
                     "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
                   }
                 ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\r\n  \"client_timestamp\": 1700000000000,\r\n  \"actions\": [\r\n    {\r\n      \"action_id\": \"action-uuid-1\",\r\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n      \"action\": \"like\",\r\n      \"timestamp\": 1700000000000\r\n    },\r\n    {\r\n      \"action_id\": \"action-uuid-2\",\r\n      \"news_id\": \"123e4567-e89b-12d3-a456-426614174001\",\r\n      \"action\": \"seen\",\r\n      \"timestamp\": 1700000001000\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
                 "url": {
-                  "raw": "/api/actions/likes",
+                  "raw": "localhost:8080/api/actions/batch",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "actions",
-                    "likes"
+                    "batch"
                   ]
                 }
               },
@@ -961,7 +1187,498 @@
                   "path": ""
                 }
               ],
-              "body": "{\r\n    \"status\": \"success\",\r\n    \"liked_news\": [\r\n        {\r\n            \"id\": \"10\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"100\",\r\n            \"theme_id\": \"3\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {\r\n            \"id\": \"14\",\r\n            \"head\": \"head\",\r\n            \"sum\": \"summary\",\r\n            \"text\": \"text\",\r\n            \"url\": \"url\",\r\n            \"url_picture\": \"pic\",\r\n            \"popularity\": \"30\",\r\n            \"theme_id\": \"4\",\r\n            \"created_at\": \"2026-03-20T12:00:00Z\"\r\n        },\r\n        {}\r\n    ]\r\n}"
+              "body": "{\r\n    \"status\": \"accepted\",\r\n    \"message\": \"Batch processed successfully\",\r\n    \"batch_id\": \"550e8400-e29b-41d4-a716-446655440000\",\r\n    \"received\": 2,\r\n    \"processed\": 2\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Лайк",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/actions/like",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "actions",
+                "like"
+              ]
+            },
+            "description": "### Запрос на выставление лайка новости\n\nТестовый запрос (вроде как). Принимает Bearer Token. Планируется локальный сбор (на мобилке) всех действий пользователя в пачку и их отправка.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если неверный UUID)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Лайк",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/like",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "like"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"accepted\",\r\n    \"message\": \"Like recorded successfully\",\r\n    \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}"
+            },
+            {
+              "name": "422",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"news_id\": \"12\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/like",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "like"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"detail\": [\r\n        {\r\n            \"type\": \"uuid_parsing\",\r\n            \"loc\": [\r\n                \"body\",\r\n                \"news_id\"\r\n            ],\r\n            \"msg\": \"Input should be a valid UUID, invalid length: expected length 32 for simple format, found 2\",\r\n            \"input\": \"12\",\r\n            \"ctx\": {\r\n                \"error\": \"invalid length: expected length 32 for simple format, found 2\"\r\n            },\r\n            \"url\": \"https://errors.pydantic.dev/2.5/v/uuid_parsing\"\r\n        }\r\n    ]\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Снятие лайка",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/actions/like",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "actions",
+                "like"
+              ]
+            },
+            "description": "### Снятие лайка\n\nТестовый запрос (вроде как). Принимает Bearer Token. Планируется локальный сбор (на мобилке) всех действий пользователя в пачку и их отправка.\n\nОтличается от выставления лайка только методом.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если неверный UUID)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Снятие лайка",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/like",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "like"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"accepted\",\r\n    \"message\": \"Unlike recorded successfully\",\r\n    \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Просмотрено",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/actions/seen",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "actions",
+                "seen"
+              ]
+            },
+            "description": "### Пометить новость как просмотренную у этого пользователя.\n\nТестовый запрос (вроде как). Принимает Bearer Token. Планируется локальный сбор (на мобилке) всех действий пользователя в пачку и их отправка.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если неверный UUID)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Просмотрено",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/seen",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "seen"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"status\": \"accepted\",\r\n    \"message\": \"Seen recorded successfully\",\r\n    \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\"\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Информация о действиях над новостью",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc4MzIzMTgwfQ.NhpGc4_PsIxJxme48j7YeG7swOB4IK7udMRH6oRg-Uc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "localhost:8080/api/actions/status/123e4567-e89b-12d3-a456-426614174000",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "actions",
+                "status",
+                "123e4567-e89b-12d3-a456-426614174000"
+              ]
+            },
+            "description": "### Информация о действиях над новостью\n\nТестовый запрос. Принимает Bearer Token и возвращает информацию о действиях конкретного пользователя над конкретной новостью, указанной в url пути.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если неверный UUID)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Информация о действиях над новостью",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{bearer_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "localhost:8080/api/actions/status/123e4567-e89b-12d3-a456-426614174000",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "status",
+                    "123e4567-e89b-12d3-a456-426614174000"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date",
+                  "domain": "",
+                  "path": ""
+                }
+              ],
+              "body": "{\r\n    \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n    \"liked\": true,\r\n    \"seen\": true\r\n}"
             }
           ]
         }
