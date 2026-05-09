@@ -207,6 +207,8 @@ services:
         condition: service_healthy
     environment:
       USER_SERVICE_URL: http://user-service:8001
+      ACTION_SERVICE_URL: http://action-service:8002
+      FEED_SERVICE_URL: http://feed-service:8003
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
     networks:
