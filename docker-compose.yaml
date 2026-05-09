@@ -269,6 +269,69 @@ services:
           cpus: "0.2"
 
 
+  action-service:
+    build: ./backend/ActionService
+    container_name: scrollic-action-service
+    ports:
+      - "${ACTION_SERVICE_PORT}:8002"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      CASSANDRA_HOSTS: cassandra
+      CASSANDRA_KEYSPACE: scrollic
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD", "python", "-c",
+        "import urllib.request;
+             urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+          cpus: "0.8"
+        reservations:
+          memory: "256M"
+          cpus: "0.2"
+
+  feed-service:
+    build: ./backend/FeedService
+    container_name: scrollic-feed-service
+    ports:
+      - "${FEED_SERVICE_PORT}:8003"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      CASSANDRA_HOSTS: cassandra
+    networks:
+      - scrollic-network
+    healthcheck:
+      test: ["CMD", "python", "-c",
+        "import urllib.request;
+             urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+          cpus: "0.8"
+        reservations:
+          memory: "256M"
+          cpus: "0.2"
+
   news-fetcher-service:
     build: ./backend/NewsFetcherService
     container_name: scrollic-news-fetcher-service
