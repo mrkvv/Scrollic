@@ -23,9 +23,6 @@ public class UserServiceRoutes {
                 .route("user_logout", r -> r
                         .path("/api/auth/logout")
                         .uri(userServiceUrl))
-                .route("user_refresh_token", r -> r
-                        .path("/api/auth/refresh")
-                        .uri(userServiceUrl))
                 .route("user_me", r -> r
                         .path("/api/users/me")
                         .uri(userServiceUrl))
