@@ -61,53 +61,78 @@ class FeedService:
 
     async def get_personalized_feed(self, user_id: int, limit: int) -> List[NewsItem]:
         """Формирование персонализированной ленты"""
+        print(f"=== START get_personalized_feed for user {user_id}, limit {limit} ===")
+
         weights = await self.get_user_theme_weights(user_id)
+        print(f"Step 1 - All weights: {weights}")
 
         if not weights:
             weights = {1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 1.0}
-            logger.info(f"No weights for user {user_id}, using default weights")
+            print(f"No weights for user {user_id}, using default weights: {weights}")
 
         all_news = await self.get_recent_news()
+        print(f"Step 2 - Total news from Cassandra: {len(all_news)}")
 
         if not all_news:
-            logger.warning(f"No news found for user {user_id}")
+            print(f"No news found for user {user_id}")
             return []
 
         seen_news = await self.get_seen_news(user_id)
         liked_news = await self.get_liked_news(user_id)
         excluded_news = seen_news.union(liked_news)
+        print(f"Step 3 - Excluded news: {len(excluded_news)}")
 
-        logger.info(f"Excluded {len(excluded_news)} news for user {user_id}")
-
+        # Фильтруем новости
         news_by_theme = {}
         for news in all_news:
             news_id = str(news['id'])
-
             if news_id in excluded_news:
                 continue
-
-            theme_id = news['theme_id']
+            theme_id = news.get('theme_id', -1)
             if theme_id not in news_by_theme:
                 news_by_theme[theme_id] = []
             news_by_theme[theme_id].append(news)
 
+        print(f"Step 4 - News by theme (after exclude):")
+        for theme_id, news_list in news_by_theme.items():
+            print(f"  Theme {theme_id}: {len(news_list)} news")
+
+        # Сортируем по популярности
         for theme_id in news_by_theme:
-            news_by_theme[theme_id].sort(key=lambda x: x['popularity'], reverse=True)
+            news_by_theme[theme_id].sort(key=lambda x: x.get('popularity', 0), reverse=True)
+
+        # Выбираем ТОЛЬКО темы, в которых есть новости
+        active_themes = {theme_id: weight for theme_id, weight in weights.items()
+                         if theme_id in news_by_theme}
+
+        if not active_themes:
+            print(f"No active themes with news!")
+            return []
+
+        print(f"Step 5 - Active themes (with news): {active_themes}")
+
+        # Пересчитываем total_weight только для активных тем
+        total_active_weight = sum(active_themes.values())
+        print(f"Step 6 - Total active weight: {total_active_weight}")
 
         selected_news = []
-        total_weight = sum(weights.values())
+        for theme_id, weight in active_themes.items():
+            theme_news = news_by_theme[theme_id]
+            # Распределяем limit пропорционально весам среди активных тем
+            news_count = max(1, int(limit * weight / total_active_weight))
+            selected_news.extend(theme_news[:news_count])
+            print(f"  Theme {theme_id}: weight={weight}, news_count={news_count}, available={len(theme_news)}")
 
-        for theme_id, weight in weights.items():
-            if theme_id in news_by_theme:
-                theme_news = news_by_theme[theme_id]
-                news_count = max(1, int(limit * weight / total_weight))
-                selected_news.extend(theme_news[:news_count])
-                logger.info(f"Theme {theme_id}: weight={weight}, news_count={news_count}")
-
-        selected_news.sort(key=lambda x: x['popularity'], reverse=True)
-
+        # Обрезаем до limit (на случай перебора из-за округления)
         selected_news = selected_news[:limit]
+        print(f"Step 7 - Selected {len(selected_news)} news before global sort")
 
+        # Сортируем глобально по популярности
+        selected_news.sort(key=lambda x: x.get('popularity', 0), reverse=True)
+
+        print(f"Step 8 - Final result: {len(selected_news)} news")
+
+        # Конвертируем в Pydantic модели
         feed = []
         for news in selected_news:
             try:
@@ -123,8 +148,8 @@ class FeedService:
                     created_at=news['created_at']
                 ))
             except Exception as e:
-                logger.error(f"Error converting news {news.get('id')}: {e}")
+                print(f"Error converting news {news.get('id')}: {e}")
                 continue
 
-        logger.info(f"Generated feed with {len(feed)} news for user {user_id}")
+        print(f"=== END: Generated {len(feed)} news for user {user_id} ===")
         return feed
