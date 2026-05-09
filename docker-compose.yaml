@@ -287,7 +287,7 @@ services:
       - scrollic-network
     healthcheck:
       test: ["CMD", "python", "-c",
-        "import urllib.request;
+             "import urllib.request;
              urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 30s
       timeout: 5s
@@ -317,7 +317,7 @@ services:
       - scrollic-network
     healthcheck:
       test: ["CMD", "python", "-c",
-        "import urllib.request;
+             "import urllib.request;
              urllib.request.urlopen('http://localhost:8003/health')"]
       interval: 30s
       timeout: 5s
