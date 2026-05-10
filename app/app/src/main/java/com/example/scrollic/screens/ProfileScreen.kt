@@ -38,10 +38,10 @@ import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
 import com.example.scrollic.screens.extra.BottomSheet
-import com.example.scrollic.screens.extra.EditGlassSheet
 import com.example.scrollic.screens.extra.EditingProfileSheetContent
 import com.example.scrollic.screens.extra.LoginSheetContent
 import com.example.scrollic.screens.extra.RegistrationSheetContent
+import com.example.scrollic.ui.BackButton
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,43 +126,18 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(25.dp))
 
-            Row(
-                modifier = Modifier
-                    .clickable { navController.popBackStack() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Icon(
-                    imageVector = getIcon(IconType.ARROW_WHITE),
-                    contentDescription = "Назад",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .graphicsLayer { rotationZ = 180f }
-                        .size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Назад",
-                    fontFamily = getInterFont(InterFontType.REGULAR),
-                    fontSize = 22.sp,
-                    color = White
-                )
-            }
+            BackButton(onClick = { navController.popBackStack() })
         }
     }
 
-    BottomSheet(
-        visible = showSheet,
-        onDismiss = { showSheet = false }
-    ) {
-        EditGlassSheet {
-            EditingProfileSheetContent(
-                onBackClick = { showSheet = false }
-            )
-        }
-    }
+    //BottomSheet(
+    //    visible = showSheet,
+    //    onDismiss = { showSheet = false }
+    //) {
+    //    EditingProfileSheetContent(
+    //        onBackClick = { showSheet = false }
+    //    )
+   // }
 }
 
 @Preview(showBackground = true)

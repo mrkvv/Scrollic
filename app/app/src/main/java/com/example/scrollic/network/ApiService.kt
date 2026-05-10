@@ -17,7 +17,7 @@ interface ApiService {
     ): Response<AuthResponse>
 
     @POST("/api/auth/logout")
-    suspend fun logout()
+    suspend fun logout(): Response<Unit>
 
     @GET("/api/users/me")
     suspend fun getCurrentUser(): Response<UserResponse>

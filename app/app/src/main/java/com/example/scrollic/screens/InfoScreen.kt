@@ -32,6 +32,7 @@ import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
 import com.example.scrollic.R
+import com.example.scrollic.ui.BackButton
 
 @Composable
 fun InfoScreen(
@@ -79,30 +80,7 @@ fun InfoScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Row(
-                modifier = Modifier
-                    .clickable { navController.popBackStack() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Icon(
-                    imageVector = getIcon(IconType.ARROW_WHITE),
-                    contentDescription = "Назад",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .graphicsLayer { rotationZ = 180f }
-                        .size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Назад",
-                    fontFamily = getInterFont(InterFontType.REGULAR),
-                    fontSize = 22.sp,
-                    color = White
-                )
-            }
+            BackButton(onClick = { navController.popBackStack() })
         }
     }
 }

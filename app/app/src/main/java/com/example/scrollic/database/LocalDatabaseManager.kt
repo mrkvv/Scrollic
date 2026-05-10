@@ -1,6 +1,6 @@
 package com.example.scrollic.database
 
-import com.example.Scrollic.localDb.User
+import com.example.scrollic.localDb.User
 import com.example.scrollic.localDb.LocalDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,7 +42,6 @@ class LocalDatabaseManager(private val database: LocalDatabase) {
                         id = user.id,
                         name = user.name,
                         token = user.token,
-                        logged_in_at = user.logged_in_at,
                         avatar_url = user.avatar_url
                     )
                 }
@@ -61,7 +60,6 @@ class LocalDatabaseManager(private val database: LocalDatabase) {
                         id = user.id,
                         name = user.name,
                         token = user.token,
-                        logged_in_at = user.logged_in_at,
                         avatar_url = user.avatar_url
                     )
                 }
@@ -119,5 +117,11 @@ class LocalDatabaseManager(private val database: LocalDatabase) {
      */
     suspend fun getToken(): String? {
         return getCurrentUser()?.token
+    }
+
+    suspend fun deleteUser() {
+        withContext(Dispatchers.IO) {
+            query.deleteAllUsers()
+        }
     }
 }

@@ -48,10 +48,11 @@ import com.example.scrollic.design.Pink
 import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
+import com.example.scrollic.ui.BackButton
 
 @Composable
 fun EditingProfileSheetContent(
-   onBackClick: () -> Unit
+    onBackClick: () -> Unit
 ){
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -95,7 +96,7 @@ fun EditingProfileSheetContent(
         )
 
         Spacer(modifier = Modifier.height(50.dp))
-        
+
         SaveProfileButton(
             onClick = {},
             modifier = Modifier
@@ -104,51 +105,13 @@ fun EditingProfileSheetContent(
 
         Spacer(modifier = Modifier.height(218.dp))
 
-        Row(
+        BackButton(
+            onClick = onBackClick,
+            text = "Назад",
             modifier = Modifier
-                .clickable { onBackClick() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Icon(
-                imageVector = getIcon(IconType.ARROW_WHITE),
-                contentDescription = "Назад",
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .graphicsLayer { rotationZ = 180f }
-                    .size(24.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = "Назад",
-                fontFamily = getInterFont(InterFontType.REGULAR),
-                fontSize = 22.sp,
-                color = White
-            )
-        }
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
-    }
-}
-
-@Composable
-fun EditGlassSheet(
-    content: @Composable ColumnScope.() -> Unit
-) {
-    val shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-
-            .background(
-                color = Color(0xFF2A2F3A)
-            )
-    ) {
-        content()
     }
 }
 

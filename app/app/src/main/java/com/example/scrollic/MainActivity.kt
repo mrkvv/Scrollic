@@ -4,22 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.scrollic.di.AppContainer
 import com.example.scrollic.navigation.AppNavGraph
 
 class MainActivity : ComponentActivity() {
+
+    // Создаем контейнер зависимостей
+    private lateinit var appContainer: AppContainer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Инициализируем контейнер с зависимостями
+        appContainer = AppContainer(applicationContext)
+
         setContent {
-            AppNavGraph()
+            // Передаем ViewModel из контейнера в навигацию
+            AppNavGraph(authViewModel = appContainer.authViewModel)
         }
     }
 }

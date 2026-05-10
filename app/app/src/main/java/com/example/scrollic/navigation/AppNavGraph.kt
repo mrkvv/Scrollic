@@ -10,10 +10,12 @@ import com.example.scrollic.screens.InfoScreen
 import com.example.scrollic.screens.InterestsScreen
 import com.example.scrollic.screens.ProfileScreen
 import com.example.scrollic.screens.SettingsScreen
+import com.example.scrollic.network.AuthViewModel
 
 @Composable
-fun AppNavGraph() {
-
+fun AppNavGraph(
+    authViewModel: AuthViewModel
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -28,7 +30,8 @@ fun AppNavGraph() {
                             inclusive = true
                         }
                     }
-                }
+                },
+                authViewModel = authViewModel
             )
         }
 

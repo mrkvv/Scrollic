@@ -35,6 +35,7 @@ import com.example.scrollic.design.InterFontType
 import com.example.scrollic.design.White
 import com.example.scrollic.design.getIcon
 import com.example.scrollic.design.getInterFont
+import com.example.scrollic.ui.BackButton
 
 @Composable
 fun SettingsScreen(
@@ -102,29 +103,7 @@ fun SettingsScreen(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 40.dp, vertical = 60.dp)
         ){
-            Row(
-                modifier = Modifier
-                    .clickable { navController.popBackStack() },
-            ) {
-
-                Icon(
-                    imageVector = getIcon(IconType.ARROW_WHITE),
-                    contentDescription = "Назад",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .graphicsLayer { rotationZ = 180f }
-                        .size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Назад",
-                    fontFamily = getInterFont(InterFontType.REGULAR),
-                    fontSize = 22.sp,
-                    color = White
-                )
-            }
+            BackButton(onClick = { navController.popBackStack() })
         }
     }
 }
