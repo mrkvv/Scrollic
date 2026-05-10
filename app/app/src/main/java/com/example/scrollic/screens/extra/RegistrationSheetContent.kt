@@ -32,24 +32,24 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scrollic.design.*
+import com.example.scrollic.ui.AuthButton
+import com.example.scrollic.ui.AuthLinkText
 
 @Composable
 fun RegistrationSheetContent(
-    onRegisterClick: () -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onRegisterClick: (name: String, password: String) -> Unit,
     onLoginClick: () -> Unit
 ) {
-
     var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp, vertical = 20.dp)
-
     ) {
-
         Text(
             text = "Регистрация",
             fontFamily = getInterFont(InterFontType.SEMI_BOLD),
@@ -66,31 +66,12 @@ fun RegistrationSheetContent(
             color = LightGrey
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(27.dp)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = "Email",
-            fontFamily = getInterFont(InterFontType.REGULAR),
-            fontSize = 20.sp,
-            color = LightGrey
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(27.dp)
+            shape = RoundedCornerShape(27.dp),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -102,144 +83,50 @@ fun RegistrationSheetContent(
             color = LightGrey
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(27.dp)
+            shape = RoundedCornerShape(27.dp),
+            enabled = !isLoading
         )
+
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(35.dp))
 
-        RegistrationButton(
-            onClick = onRegisterClick,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+        AuthButton(
+            text = "Регистрация",
+            onClick = {
+                println("DEBUG: Registration button clicked! Name: $name, Password: $password")
+                onRegisterClick(name, password)
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            enabled = !isLoading && name.isNotBlank() && password.isNotBlank()
         )
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ){
-
-            Text(
-                text = "Уже есть профиль? ",
-                fontFamily = getInterFont(InterFontType.REGULAR),
-                fontSize = 20.sp,
-                color = LightGrey
-            )
-
-            Text(
-                text = "Войти",
-                fontFamily = getInterFont(InterFontType.SEMI_BOLD),
-                fontSize = 20.sp,
-                color = Pink,
-                modifier = Modifier.clickable { onLoginClick() }
-            )
-        }
+        AuthLinkText(
+            mainText = "Уже есть профиль? ",
+            linkText = "Войти",
+            onLinkClick = onLoginClick,
+            enabled = !isLoading
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
-    }
-}
-
-@Composable
-fun RegistrationButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .width(190.dp)
-            .height(60.dp)
-            .clip(RoundedCornerShape(30.dp))
-            .background(Pink)
-            .innerShadow(
-                shape = RoundedCornerShape(30.dp),
-                shadow = Shadow(
-                    radius = 1.3.dp,
-                    spread = 0.dp,
-                    offset = DpOffset(1.dp, 2.dp),
-                    color = Color.White,
-                    alpha = 0.41f
-                )
-            )
-            .innerShadow(
-                shape = RoundedCornerShape(30.dp),
-                shadow = Shadow(
-                    radius = 4.dp,
-                    spread = 0.dp,
-                    offset = DpOffset((-2).dp, (-2).dp),
-                    color = Color(0xFF737373),
-                    alpha = 0.25f
-                )
-            )
-            .clickable { onClick() },
-
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Регистрация",
-            fontFamily = getInterFont(InterFontType.BOLD),
-            fontSize = 24.sp,
-            color = White
-        )
-    }
-}
-
-@Composable
-fun GlassSheet(
-    content: @Composable ColumnScope.() -> Unit
-) {
-    val shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.75f),
-                        Color.White.copy(alpha = 1f)
-                    )
-                )
-            )
-            .innerShadow(
-                shape = shape,
-                shadow = Shadow(
-                    radius = 1.5.dp,
-                    spread = 0.dp,
-                    offset = DpOffset(2.dp, 2.dp),
-                    color = Color.White,
-                    alpha = 0.4f
-                )
-            )
-
-            .innerShadow(
-                shape = shape,
-                shadow = Shadow(
-                    radius = 6.dp,
-                    spread = 0.dp,
-                    offset = DpOffset((-3).dp, (-3).dp),
-                    color = Color.White,
-                    alpha = 0.25f
-                )
-            )
-    ) {
-        content()
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun RegPreview() {
-    RegistrationSheetContent(
-        onRegisterClick = {},
-        onLoginClick = {}
-    )
 }

@@ -183,7 +183,7 @@ object MockNews {
             tags = listOf("Разное")
         ),
 
-    )
+        )
 }
 
 @Composable
@@ -274,7 +274,6 @@ fun NewsCard(
 @Preview(showBackground = true)
 @Composable
 fun NewsPreview() {
-    // Создаём тестовую новость для превью
     val sampleNews = News(
         id = 1,
         title = "Запуск Scrollic!",

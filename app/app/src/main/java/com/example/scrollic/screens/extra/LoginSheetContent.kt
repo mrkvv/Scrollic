@@ -38,14 +38,17 @@ import com.example.scrollic.design.LightGrey
 import com.example.scrollic.design.Pink
 import com.example.scrollic.design.White
 import com.example.scrollic.design.getInterFont
+import com.example.scrollic.ui.AuthButton
+import com.example.scrollic.ui.AuthLinkText
 
 @Composable
 fun LoginSheetContent(
-    onLoginClick: () -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onLoginClick: (name: String, password: String) -> Unit,
     onRegisterClick: () -> Unit
 ) {
-
-    var email by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(
@@ -53,7 +56,6 @@ fun LoginSheetContent(
             .fillMaxWidth()
             .padding(horizontal = 40.dp, vertical = 20.dp)
     ) {
-
         Text(
             text = "Вход",
             fontFamily = getInterFont(InterFontType.SEMI_BOLD),
@@ -64,7 +66,7 @@ fun LoginSheetContent(
         Spacer(modifier = Modifier.height(35.dp))
 
         Text(
-            text = "Email",
+            text = "Имя пользователя",
             fontFamily = getInterFont(InterFontType.REGULAR),
             fontSize = 20.sp,
             color = LightGrey
@@ -73,10 +75,11 @@ fun LoginSheetContent(
         Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = name,
+            onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(27.dp)
+            shape = RoundedCornerShape(27.dp),
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -95,93 +98,44 @@ fun LoginSheetContent(
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(27.dp)
+            shape = RoundedCornerShape(27.dp),
+            enabled = !isLoading
         )
+
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 14.sp,
+                fontFamily = getInterFont(InterFontType.REGULAR)
+            )
+        }
 
         Spacer(modifier = Modifier.height(35.dp))
 
-        LoginButton(
-            onClick = onLoginClick,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+        AuthButton(
+            text = "Вход",
+            onClick = { onLoginClick(name, password) },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            enabled = !isLoading && name.isNotBlank() && password.isNotBlank()
         )
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ){
-
-            Text(
-                text = "Нет профиля? ",
-                fontFamily = getInterFont(InterFontType.REGULAR),
-                fontSize = 20.sp,
-                color = LightGrey
-            )
-
-            Text(
-                text = "Регистрация",
-                fontFamily = getInterFont(InterFontType.SEMI_BOLD),
-                fontSize = 20.sp,
-                color = Pink,
-                modifier = Modifier.clickable { onRegisterClick() }
-            )
-        }
+        AuthLinkText(
+            mainText = "Нет профиля? ",
+            linkText = "Регистрация",
+            onLinkClick = onRegisterClick,
+            enabled = !isLoading
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
-    }
-}
-
-@Composable
-fun LoginButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .width(190.dp)
-            .height(60.dp)
-            .clip(RoundedCornerShape(30.dp))
-            .background(Pink)
-            .innerShadow(
-                shape = RoundedCornerShape(30.dp),
-                shadow = Shadow(
-                    radius = 1.3.dp,
-                    spread = 0.dp,
-                    offset = DpOffset(1.dp, 2.dp),
-                    color = Color.White,
-                    alpha = 0.41f
-                )
-            )
-            .innerShadow(
-                shape = RoundedCornerShape(30.dp),
-                shadow = Shadow(
-                    radius = 4.dp,
-                    spread = 0.dp,
-                    offset = DpOffset((-2).dp, (-2).dp),
-                    color = Color(0xFF737373),
-                    alpha = 0.25f
-                )
-            )
-            .clickable { onClick() },
-
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Вход",
-            fontFamily = getInterFont(InterFontType.BOLD),
-            fontSize = 24.sp,
-            color = White
-        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LogPreview() {
-    LoginSheetContent(
-        onLoginClick = {},
-        onRegisterClick = {}
-    )
+
 }
