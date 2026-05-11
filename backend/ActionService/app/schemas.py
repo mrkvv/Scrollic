@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from uuid import UUID
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 
 
@@ -54,3 +54,7 @@ class SeenRequest(BaseModel):
 
 class UnlikeRequest(BaseModel):
     news_id: UUID
+
+
+class PreferencesRequest(BaseModel):
+    theme_weights: Dict[int, float]  # {theme_id: weight}
