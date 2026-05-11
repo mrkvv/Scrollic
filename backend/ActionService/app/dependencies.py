@@ -57,3 +57,5 @@ async def set_default_preferences(
     """
     for theme_id, weight in request.theme_weights.items():
         cassandra_session.execute(insert_query, (user_id, theme_id, weight, datetime.now()))
+
+    return x_user_id

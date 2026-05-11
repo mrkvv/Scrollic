@@ -6,8 +6,12 @@ from uuid import UUID
 from datetime import datetime
 from app.schemas import (
     BatchActions, BatchResponse, ActionResponse,
+<<<<<<< HEAD
     ActionStatusResponse, LikeRequest, SeenRequest, UnlikeRequest,
     PreferencesRequest
+=======
+    ActionStatusResponse, LikeRequest, SeenRequest, UnlikeRequest
+>>>>>>> acb1fe71001f9380ee3fb1074349454278030efc
 )
 from app.dependencies import get_current_user, get_redis
 from app.database import get_cassandra
@@ -315,6 +319,7 @@ async def recalculate_weights(
         raise
     except Exception as e:
         logger.error(f"Error recalculating weights: {e}")
+<<<<<<< HEAD
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -413,3 +418,6 @@ async def get_user_preferences(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+=======
+        raise HTTPException(status_code=500, detail=str(e))
+>>>>>>> acb1fe71001f9380ee3fb1074349454278030efc
