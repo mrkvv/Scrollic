@@ -6,6 +6,7 @@ import retrofit2.http.*
 
 interface ApiService {
 
+    // Auth endpoints
     @POST("/api/auth/register")
     suspend fun register(
         @Body request: RegisterRequest
@@ -31,4 +32,36 @@ interface ApiService {
     suspend fun changePassword(
         @Body request: ChangePasswordRequest
     ): Response<Unit>
+
+    // Feed endpoints
+    @GET("/api/feed")
+    suspend fun getFeed(
+        @Query("limit") limit: Int
+    ): Response<FeedResponse>
+
+    @POST("/api/actions/batch")
+    suspend fun sendActionBatch(
+        @Body request: ActionBatchRequest
+    ): Response<ActionBatchResponse>
+
+    @POST("/api/actions/like")
+    suspend fun likeNews(
+        @Body request: ActionRequest
+    ): Response<ActionBatchResponse>
+
+    @DELETE("/api/actions/like")
+    suspend fun unlikeNews(
+        @Body request: ActionRequest
+    ): Response<ActionBatchResponse>
+
+    @POST("/api/actions/seen")
+    suspend fun markAsSeen(
+        @Body request: ActionRequest
+    ): Response<ActionBatchResponse>
+
+    @GET("/api/actions/status/{news_id}")
+    suspend fun getActionStatus(
+        @Path("news_id") newsId: String
+    ): Response<ActionStatusResponse>
+
 }

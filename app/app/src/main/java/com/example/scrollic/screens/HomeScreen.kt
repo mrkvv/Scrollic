@@ -1,5 +1,7 @@
 package com.example.scrollic.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
@@ -8,42 +10,55 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import com.example.scrollic.navigation.Screen
-import com.example.scrollic.screens.extra.DrawerContent
-import kotlin.math.roundToInt
+import coil.compose.rememberAsyncImagePainter
 import com.example.scrollic.R
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import com.example.scrollic.navigation.Screen
+import com.example.scrollic.network.NewsItem
+import com.example.scrollic.screens.extra.DrawerContent
+import com.example.scrollic.network.FeedUiState
+import com.example.scrollic.network.FeedViewModel
+import kotlin.math.roundToInt
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
-fun HomeScreen(navController: NavController) {
-
+fun HomeScreen(
+    navController: NavController,
+    feedViewModel: FeedViewModel
+) {
     var isMenuOpen by remember { mutableStateOf(false) }
-    val newsList = remember { MockNews.newsList } // Получаем список новостей
+    val uiState by feedViewModel.uiState.collectAsState()
+
+    // Загружаем новости при первом открытии
+    LaunchedEffect(Unit) {
+        feedViewModel.loadFeed()
+    }
 
     val transition = updateTransition(isMenuOpen, label = "drawer")
 
@@ -129,72 +144,95 @@ fun HomeScreen(navController: NavController) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                // Лента новостей (LazyColumn для вертикальной прокрутки)
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(newsList) { news ->  // ← Исправлено: items, а не items
-                        NewsCard(
-                            news = news,
-                            modifier = Modifier  // ← Убрали animateItemPlacement
-                        )
+                // Лента новостей
+                when (uiState) {
+                    is FeedUiState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
 
-                    // Добавляем отступ снизу для удобства прокрутки
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                    is FeedUiState.Success -> {
+                        val newsList = (uiState as FeedUiState.Success).news
+
+                        if (newsList.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Новостей пока нет",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                items(newsList, key = { it.id }) { news ->
+                                    NewsCard(
+                                        newsItem = news,
+                                        modifier = Modifier
+                                    )
+                                }
+
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
+                            }
+                        }
                     }
+
+                    is FeedUiState.Error -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Text(
+                                    text = (uiState as FeedUiState.Error).message,
+                                    fontSize = 16.sp,
+                                    color = Color.Red
+                                )
+                                Button(
+                                    onClick = { feedViewModel.refresh() }
+                                ) {
+                                    Text("Повторить")
+                                }
+                            }
+                        }
+                    }
+
+                    else -> {}
                 }
             }
         }
     }
 }
 
-data class News(
-    val id: Int,
-    val title: String,
-    val content: String,
-    val imageResId: Int?,
-    val tags: List<String>
-)
-
-object MockNews {
-    val newsList = listOf(
-        News(
-            id = 1,
-            title = "Запуск Scrollic!",
-            content = "Мы рады представить новое приложение для чтения новостей. Scrollic поможет вам быть в курсе последних событий в мире технологий и не только. Подписывайтесь на интересующие вас темы и получайте персонализированную ленту новостей.",
-            imageResId = null, // Временно, позже замените на реальные картинки
-            tags = listOf("Анонс", "Scrollic", "Новости")
-        ),
-        News(
-            id = 2,
-            title = "Учёные нашли ещё один повод не отказываться от кофе",
-            content = "Исследователи из Фуданьского университета изучили данные почти 400 тысяч человек и пришли к выводу, что регулярное употребление кофе может быть связано с более низким риском депрессии и тревожности. Предполагается, что всё дело в кофеине – он способен ненадолго улучшать настроение и влиять на выработку дофамина.",
-            imageResId = R.drawable.photo1,
-            tags = listOf("Разное")
-        ),
-        News(
-            id = 3,
-            title = "Disney сократила более 1000 сотрудников по всем подразделениям",
-            content = "Компания пошла на масштабные увольнения в рамках оптимизации расходов. Под сокращения попали сотрудники сразу в нескольких направлениях бизнеса. Особенно сильно решение ударило по Marvel Studios, которой руководит Кевин Файги. По данным источников, в студии уволили почти всю команду, связанную с визуальными эффектами, включая специалистов с опытом работы более десяти лет. После сокращений, как сообщается, осталась только небольшая группа сотрудников, которая будет координировать найм специалистов под отдельные проекты.",
-            imageResId = R.drawable.photo2,
-            tags = listOf("Разное")
-        ),
-
-        )
-}
-
 @Composable
 fun NewsCard(
-    news: News,
+    newsItem: NewsItem,
     modifier: Modifier = Modifier
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { isExpanded = !isExpanded },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -209,14 +247,21 @@ fun NewsCard(
                 .background(Color.White)
         ) {
             // Изображение новости
-            if (news.imageResId != null) {
+            if (!newsItem.url_picture.isNullOrBlank()) {
+                val painter = rememberAsyncImagePainter(
+                    model = newsItem.url_picture,
+                    error = painterResource(R.drawable.ic_launcher_foreground),
+                    placeholder = painterResource(R.drawable.ic_launcher_foreground)
+                )
+
                 Image(
-                    painter = painterResource(id = news.imageResId),
-                    contentDescription = news.title,
+                    painter = painter,
+                    contentDescription = newsItem.head,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(200.dp)
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                    contentScale = ContentScale.FillWidth
+                    contentScale = ContentScale.Crop
                 )
             }
 
@@ -226,64 +271,92 @@ fun NewsCard(
             ) {
                 // Заголовок
                 Text(
-                    text = news.title,
-                    fontSize = 20.sp,
+                    text = newsItem.head,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A1A1A),
-                    lineHeight = 28.sp
+                    lineHeight = 24.sp,
+                    maxLines = if (isExpanded) Int.MAX_VALUE else 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Теги
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Тема
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color(0xFFE8ECF4),
+                    modifier = Modifier
                 ) {
-                    news.tags.forEach { tag ->
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color(0xFFE8ECF4),
-                            modifier = Modifier
-                        ) {
-                            Text(
-                                text = tag,
-                                fontSize = 12.sp,
-                                color = Color(0xFF636363),
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
-                        }
-                    }
+                    Text(
+                        text = getThemeName(newsItem.theme_id),
+                        fontSize = 12.sp,
+                        color = Color(0xFF636363),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Полный текст новости
+                // Текст новости
                 Text(
-                    text = news.content,
+                    text = if (isExpanded) newsItem.text else (newsItem.summary ?: if (newsItem.text.length > 150) newsItem.text.take(150) + "..." else newsItem.text),
                     fontSize = 14.sp,
                     color = Color(0xFF4A4A4A),
                     lineHeight = 20.sp
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Дата и ссылка
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = formatDate(newsItem.created_at),
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+
+                    if (isExpanded && newsItem.url.isNotBlank()) {
+                        Text(
+                            text = "Читать полностью →",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(newsItem.url))
+                                context.startActivity(intent)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun NewsPreview() {
-    val sampleNews = News(
-        id = 1,
-        title = "Запуск Scrollic!",
-        content = "Мы рады представить новое приложение для чтения новостей. Scrollic поможет вам быть в курсе последних событий.",
-        imageResId = R.drawable.ic_launcher_foreground,
-        tags = listOf("Анонс", "Scrollic", "Новости")
-    )
+// Вспомогательные функции
+fun formatDate(dateString: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        val date = inputFormat.parse(dateString)
+        outputFormat.format(date ?: Date())
+    } catch (e: Exception) {
+        dateString
+    }
+}
 
-    NewsCard(
-        news = sampleNews,
-        modifier = Modifier.padding(16.dp)
-    )
+fun getThemeName(themeId: Int): String {
+    return when (themeId) {
+        1 -> "Спорт"
+        2 -> "Политика"
+        3 -> "Экономика"
+        4 -> "Общество"
+        5 -> "Технологии"
+        else -> "Разное"
+    }
 }
