@@ -26,6 +26,9 @@ public class ActionServiceRoutes {
                 .route("action_get_status", r -> r
                         .path("/api/actions/status/{news_id}")
                         .uri(actionServiceUrl))
+                .route("action_preferences", r -> r
+                        .path("/api/actions/preferences")
+                        .uri(actionServiceUrl))
                 .build();
     }
 }

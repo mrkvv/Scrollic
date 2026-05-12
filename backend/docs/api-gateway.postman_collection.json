@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "7f6e7578-1867-488f-a0de-bb0d0ffa2768",
+    "_postman_id": "e3197cf7-a243-4237-bc3f-2cc3e082fc81",
     "name": "APIGateway Documentation",
     "description": "Документация сервиса-маршрутизатора для мобильного приложения Scrollic\n\n## Общая информация:\n\n- Если приходит слишком много запросов от конкретного пользователя/ip, то в любом случае выбрасывается 429 Too Many Requests с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"Too many requests. Limit: <limit> per minute\"\n}\n\n ```\n\n- В каждый запрос (\\*почти) добавляется заголовок Authorization с Bearer Token'ом пользователя. Под капотом APIGateway: сверяется Bearer token и, если все хорошо, то в сервисы пробрасываются заголовки \"X-User-Id\" и \"X-Username\", без токена. Те уже в свою очередь, делают то, что делают.\n    \n- Если пользователь не прошел по Bearer Token'у, то выбрасывается 401 Unauthorized с таким телом:\n    \n\n``` json\n{\n  \"status\": \"error\",\n  \"message\": \"<message>\"\n}\n\n ```\n\n- На Bearer Token не проверяются только регистрация, логин, logout и удаление аккаунта.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -815,10 +815,10 @@
               },
               "status": "No Content",
               "code": 204,
-              "_postman_previewlanguage": null,
-              "header": null,
+              "_postman_previewlanguage": "Text",
+              "header": [],
               "cookie": [],
-              "body": null
+              "body": ""
             },
             {
               "name": "Если токен не актуален",
@@ -1679,6 +1679,162 @@
                 }
               ],
               "body": "{\r\n    \"news_id\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n    \"liked\": true,\r\n    \"seen\": true\r\n}"
+            }
+          ]
+        },
+        {
+          "name": "Установить весов",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwiZXhwIjoxNzc4NjExNDU2fQ.7RoqyxldIM0N5WmZ1UIgW2oqTHZCJh3arjJKOlQa1-g",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"theme_weights\": \r\n    {\r\n        \"1\": 20,\r\n        \"2\": 30,\r\n        \"11\": 50\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/actions/preferences",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "actions",
+                "preferences"
+              ]
+            },
+            "description": "### Установить веса для пользователя.\n\nТребует BearerToken. Сумма весов должна быть 100, в противном случае сервис в процентном соотношении подправит веса, сделав чистую 100.\n\nСтандартный use-case: после регистрации пользователю выпадает список тем ддя выбора любимых. Выбранные темы отправляются сюда и записываются в Cassandra.\n\nПри отправке этого запроса все предыдущие веса пользователя удаляются и перезаписываются новыми.\n\nВозможные статусы ответов:\n\n- 200 OK\n    \n- 401 Unauthorized\n    \n- 422 Unprocessable Entity (если что-то не так с телом)\n    \n- 429 Too Many Requests"
+          },
+          "response": [
+            {
+              "name": "Установить весов",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"theme_weights\": \r\n    {\r\n        \"1\": 20,\r\n        \"2\": 30,\r\n        \"11\": 50\r\n    }\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/preferences",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "preferences"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"message\": \"User preferences saved successfully\",\r\n    \"user_id\": 4,\r\n    \"weights\": {\r\n        \"1\": 20.0,\r\n        \"2\": 30.0,\r\n        \"11\": 50.0\r\n    }\r\n}"
+            },
+            {
+              "name": "Сумма весов != 100",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"theme_weights\": \r\n    {\r\n        \"1\": 1,\r\n        \"2\": 2,\r\n        \"11\": 1\r\n    }\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/api/actions/preferences",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "api",
+                    "actions",
+                    "preferences"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\r\n    \"status\": \"success\",\r\n    \"message\": \"User preferences saved successfully\",\r\n    \"user_id\": 4,\r\n    \"weights\": {\r\n        \"1\": 25.0,\r\n        \"2\": 50.0,\r\n        \"11\": 25.0\r\n    }\r\n}"
             }
           ]
         }
