@@ -6,7 +6,8 @@ from uuid import UUID
 from datetime import datetime
 from app.schemas import (
     BatchActions, BatchResponse, ActionResponse,
-    ActionStatusResponse, LikeRequest, SeenRequest, UnlikeRequest
+    ActionStatusResponse, LikeRequest, SeenRequest, UnlikeRequest,
+    PreferencesRequest
 )
 from app.dependencies import get_current_user, get_redis
 from app.database import get_cassandra
@@ -315,3 +316,100 @@ async def recalculate_weights(
     except Exception as e:
         logger.error(f"Error recalculating weights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/preferences")
+async def set_user_preferences(
+        request: PreferencesRequest,
+        user_id: int = Depends(get_current_user),
+        cassandra_session=Depends(get_cassandra),
+        redis_client=Depends(get_redis)
+):
+    """
+    Установить предпочтения пользователя (избранные категории).
+    Вызывается после регистрации для инициализации весов тем.
+    """
+    try:
+        if not cassandra_session:
+            raise HTTPException(status_code=503, detail="Cassandra not available")
+
+        # Нормализуем веса (чтобы сумма была 100)
+        total = sum(request.theme_weights.values())
+        if total != 100:
+            # Нормируем к 100%
+            normalized_weights = {
+                theme_id: (weight / total) * 100
+                for theme_id, weight in request.theme_weights.items()
+            }
+            logger.info(f"Normalized weights from sum={total} to 100: {normalized_weights}")
+        else:
+            normalized_weights = request.theme_weights
+
+        # Удаляем старые веса пользователя
+        delete_query = "DELETE FROM user_theme_weights WHERE user_id = %s"
+        cassandra_session.execute(delete_query, (user_id,))
+
+        # Сохраняем новые веса
+        insert_query = """
+            INSERT INTO user_theme_weights (user_id, theme_id, weight, updated_at)
+            VALUES (%s, %s, %s, %s)
+        """
+        for theme_id, weight in normalized_weights.items():
+            cassandra_session.execute(insert_query, (user_id, theme_id, weight, datetime.now()))
+
+        logger.info(f"Saved preferences for user {user_id}: {normalized_weights}")
+
+        # Инвалидируем кэш FeedService (чтобы лента обновилась с новыми весами)
+        from app.services.weight_recalculator import WeightRecalculator
+        recalculator = WeightRecalculator(cassandra_session)
+        await recalculator._invalidate_feed_cache(user_id)
+
+        # Если Redis доступен, очистим кэш статусов для этого пользователя
+        if redis_client:
+            keys = redis_client.keys(f"action_status:{user_id}:*")
+            if keys:
+                redis_client.delete(*keys)
+                logger.info(f"Invalidated {len(keys)} action status cache keys for user {user_id}")
+
+        return {
+            "status": "success",
+            "message": "User preferences saved successfully",
+            "user_id": user_id,
+            "weights": normalized_weights
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving preferences for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/preferences")
+async def get_user_preferences(
+        user_id: int = Depends(get_current_user),
+        cassandra_session=Depends(get_cassandra)
+):
+    """
+    Получить текущие предпочтения пользователя (веса тем).
+    """
+    try:
+        if not cassandra_session:
+            raise HTTPException(status_code=503, detail="Cassandra not available")
+
+        query = "SELECT theme_id, weight FROM user_theme_weights WHERE user_id = %s"
+        rows = cassandra_session.execute(query, (user_id,))
+
+        weights = {row['theme_id']: float(row['weight']) for row in rows}
+
+        return {
+            "status": "success",
+            "user_id": user_id,
+            "weights": weights
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting preferences for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
