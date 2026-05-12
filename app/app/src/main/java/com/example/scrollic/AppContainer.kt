@@ -1,11 +1,9 @@
-package com.example.scrollic.di
+package com.example.scrollic
 
 import android.content.Context
 import com.example.scrollic.database.DatabaseDriverFactory
 import com.example.scrollic.database.LocalDatabaseManager
-import com.example.scrollic.network.AuthManager
-import com.example.scrollic.network.RetrofitInstance
-import com.example.scrollic.network.AuthViewModel
+import com.example.scrollic.network.*
 
 class AppContainer(private val context: Context) {
 
@@ -29,11 +27,16 @@ class AppContainer(private val context: Context) {
         retrofitInstance.apiService
     }
 
-    private val authManager by lazy {
+    // Сделали public (убрали private)
+    val authManager by lazy {
         AuthManager(apiService, dbManager)
     }
 
-    val authViewModel by lazy {
-        AuthViewModel(authManager)
+    val feedManager by lazy {
+        FeedManager(apiService)
+    }
+
+    val actionManager by lazy {
+        ActionManager(apiService)
     }
 }
