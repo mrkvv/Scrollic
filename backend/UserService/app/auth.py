@@ -1,17 +1,43 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import hashlib
+import secrets
 from .config import config
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    salt = secrets.token_hex(32)
+    iterations = 30_000
+
+    hash_value = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        iterations
+    ).hex()
+
+    return f"pbkdf2_sha256${iterations}${salt}${hash_value}"
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        algorithm, iterations, salt, hash_value = hashed_password.split('$')
+
+        if algorithm != "pbkdf2_sha256":
+            return False
+
+        iterations = int(iterations)
+
+        new_hash = hashlib.pbkdf2_hmac(
+            'sha256',
+            plain_password.encode('utf-8'),
+            salt.encode('utf-8'),
+            iterations
+        ).hex()
+
+        return new_hash == hash_value
+    except Exception:
+        return False
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
