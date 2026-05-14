@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
 from .. import schemas
 from ..database import get_db
 from ..models import User
@@ -9,13 +11,13 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 
 
 @router.get("/me", response_model=schemas.UserResponse)
-def get_me(
+async def get_me(
         x_user_id: int = Header(..., alias="X-User-Id"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    """Получение профиля текущего пользователя"""
+    result = await db.execute(select(User).where(User.id == x_user_id))
+    user = result.scalar_one_or_none()
 
-    user = db.query(User).filter(User.id == x_user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -30,14 +32,14 @@ def get_me(
 
 
 @router.put("/me", response_model=schemas.UserResponse)
-def update_me(
+async def update_me(
         update_data: schemas.UserUpdate,
         x_user_id: int = Header(..., alias="X-User-Id"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    """Обновление профиля"""
+    result = await db.execute(select(User).where(User.id == x_user_id))
+    user = result.scalar_one_or_none()
 
-    user = db.query(User).filter(User.id == x_user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -45,8 +47,9 @@ def update_me(
         )
 
     if update_data.name is not None:
-        # Проверяем, не занято ли имя другим пользователем
-        existing = db.query(User).filter(User.name == update_data.name).first()
+        result = await db.execute(select(User).where(User.name == update_data.name))
+        existing = result.scalar_one_or_none()
+
         if existing and existing.id != x_user_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,8 +57,8 @@ def update_me(
             )
         user.name = update_data.name
 
-    db.commit()
-    db.refresh(user)
+    await db.flush()
+    await db.refresh(user)
 
     return {
         "id": user.id,
@@ -65,27 +68,30 @@ def update_me(
 
 
 @router.put("/me/password", status_code=status.HTTP_204_NO_CONTENT)
-def change_password(
+async def change_password(
         password_data: schemas.PasswordChange,
         x_user_id: int = Header(..., alias="X-User-Id"),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    """Смена пароля"""
+    result = await db.execute(select(User).where(User.id == x_user_id))
+    user = result.scalar_one_or_none()
 
-    user = db.query(User).filter(User.id == x_user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
-    if not verify_password(password_data.old_password, user.password):
+    password_ok = verify_password(password_data.old_password, user.password)
+
+    if not password_ok:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid old password"
         )
 
-    user.password = get_password_hash(password_data.new_password)
-    db.commit()
+    new_hash = get_password_hash(password_data.new_password)
+    user.password = new_hash
+    await db.flush()
 
     return None
