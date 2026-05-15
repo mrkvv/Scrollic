@@ -10,14 +10,12 @@ from app.services.weight_recalculator import WeightRecalculator
 import time
 from collections import deque
 
-# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Для мониторинга очереди
 request_times = deque(maxlen=100)
 
 

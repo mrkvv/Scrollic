@@ -7,7 +7,6 @@ import time
 
 logger = logging.getLogger(__name__)
 
-
 class CassandraClient:
     def __init__(self):
         self.cluster = None

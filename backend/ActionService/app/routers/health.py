@@ -24,7 +24,6 @@ async def health_check():
     else:
         redis_status = "not_configured"
 
-    # Проверка Cassandra
     cassandra_session = get_cassandra()
     if cassandra_session:
         try:

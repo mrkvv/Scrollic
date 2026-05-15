@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 _redis_client = None
 
-
 async def get_redis() -> redis.Redis:
     """Получение асинхронного Redis клиента"""
     global _redis_client

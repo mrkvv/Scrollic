@@ -7,7 +7,7 @@ from datetime import datetime
 class Action(BaseModel):
     action_id: str
     news_id: UUID
-    action: str  # "like" or "seen"
+    action: str
     timestamp: int
 
 

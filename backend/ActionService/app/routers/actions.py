@@ -74,7 +74,6 @@ async def batch_actions(
             f"Total time: {total_time:.3f}s | Avg per action: {total_time / len(batch.actions):.3f}s ==="
         )
 
-        # Запускаем пересчет весов в фоне
         background_tasks.add_task(recalculate_user_weights_async, user_id, cassandra_session)
 
         return BatchResponse(

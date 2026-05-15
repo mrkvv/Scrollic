@@ -7,7 +7,6 @@ import asyncio
 
 logger = logging.getLogger(__name__)
 
-
 class WeightRecalculator:
     def __init__(self, cassandra_session):
         self.session = cassandra_session
