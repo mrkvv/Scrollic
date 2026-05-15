@@ -23,7 +23,7 @@ services:
       resources:
         limits:
           memory: "512M"
-          cpus: "0.5"
+          cpus: "2.0"
         reservations:
           memory: "128M"
           cpus: "0.2"
@@ -222,7 +222,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: "768M"
+          memory: "2048M"
           cpus: "0.5"
         reservations:
           memory: "384M"
@@ -264,8 +264,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: "512M"
-          cpus: "0.8"
+          memory: "768M"
+          cpus: "2.0"
         reservations:
           memory: "256M"
           cpus: "0.2"
@@ -298,8 +298,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: "768M"
-          cpus: "1.2"
+          memory: "2048M"
+          cpus: "2.0"
         reservations:
           memory: "384M"
           cpus: "0.4"
@@ -328,8 +328,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: "512M"
-          cpus: "0.8"
+          memory: "1024M"
+          cpus: "3.0"
         reservations:
           memory: "256M"
           cpus: "0.2"
