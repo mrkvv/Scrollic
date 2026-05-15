@@ -8,7 +8,7 @@ import java.util.UUID;
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.*;
 
-public class LoadTest extends Simulation {
+public class StressTest extends Simulation {
 
     HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8080")
@@ -74,10 +74,10 @@ public class LoadTest extends Simulation {
                             )
                     )
                             .exec(http("Actions_Batch")
-                                    .post("/api/actions/batch")
-                                    .header("Authorization", "Bearer #{token}")
-                                    .body(StringBody(session -> generateBatchBody()))
-                                    .check(status().in(200))
+                                .post("/api/actions/batch")
+                                .header("Authorization", "Bearer #{token}")
+                                .body(StringBody(session -> generateBatchBody()))
+                                .check(status().in(200, 202))
                             )
             );
 
@@ -85,10 +85,16 @@ public class LoadTest extends Simulation {
         setUp(
                 scn.injectOpen(
                         rampUsersPerSec(1).to(30).during(Duration.ofMinutes(5)),
-                        constantUsersPerSec(30).during(Duration.ofMinutes(15))
+
+                        constantUsersPerSec(30).during(Duration.ofMinutes(1)),
+
+                        incrementUsersPerSec(3.0)
+                                .times(20)
+                                .eachLevelLasting(Duration.ofSeconds(10))
+                                .startingFrom(30)
                 ).protocols(httpProtocol)
         ).assertions(
-                global().successfulRequests().percent().gt(90.0)
+                global().successfulRequests().percent().gt(75.0)
         );
     }
 }

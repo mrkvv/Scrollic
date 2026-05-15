@@ -1,0 +1,15 @@
+<configuration>
+    <logger name="io.gatling" level="WARN"/>
+    <logger name="io.gatling.http" level="WARN"/>
+    <logger name="io.gatling.http.engine.response" level="OFF"/>
+    <logger name="io.gatling.http.client.impl" level="OFF"/>
+    <logger name="io.gatling.core.controller" level="WARN"/>
+
+    <root level="WARN">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%msg%n</pattern>
+            </encoder>
+        </appender>
+    </root>
+</configuration>
