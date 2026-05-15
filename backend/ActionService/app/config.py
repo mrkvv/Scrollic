@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 class Config:
     # Cassandra
     CASSANDRA_HOSTS: list = os.getenv("CASSANDRA_HOSTS", "localhost").split(",")
